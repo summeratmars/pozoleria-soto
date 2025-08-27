@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root {
+    --pozoleria-orange: #e97c1a;
+    --pozoleria-orange-light: #f4a261;
+    --pozoleria-orange-dark: #d96914;
+    --success-green: #28a745;
+    --success-green-light: #4caf50;
+    --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+    --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+    --border-radius: 12px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.confirmation-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding: var(--spacing-md) var(--spacing-sm);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* FONDO DECORATIVO */
+.confirmation-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 20%, rgba(233, 124, 26, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(40, 167, 69, 0.05) 0%, transparent 50%);
+    z-index: 0;
+    animation: backgroundFloat 20s ease-in-out infinite;
+}
+
+@keyframes backgroundFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(-20px, -10px) rotate(1deg); }
+    66% { transform: translate(10px, -20px) rotate(-1deg); }
+}
+
+/* CARD PRINCIPAL DE ÉXITO */
+.success-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-heavy);
+    border: 1px solid #e9ecef;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: slideInUp 0.6s ease-out;
+}
+
+.success-icon-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.success-icon {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--success-green), var(--success-green-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    animation: successPulse 2s ease-in-out infinite;
+    position: relative;
+}
+
+.success-icon::before {
+    content: '';
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    border: 3px solid rgba(40, 167, 69, 0.2);
+    border-radius: 50%;
+    animation: ripple 2s ease-out infinite;
+}
+
+.success-icon i {
+    color: white;
+    font-size: 2.5rem;
+    animation: checkBounce 0.8s ease-out 0.5s both;
+}
+
+@keyframes successPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.2);
+        opacity: 0;
+    }
+}
+
+@keyframes checkBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-45deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1) rotate(-10deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.success-title {
+    color: var(--pozoleria-orange);
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: var(--spacing-md);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.success-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* NÚMERO DE PEDIDO */
+.order-number-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+    overflow: hidden;
+    animation: slideInRight 0.8s ease-out 0.3s both;
+}
+
+.order-number-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.order-number-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.order-number-icon {
+    background: #28a745;
+    color: white;
+    padding: 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.order-number-title {
+    color: #155724;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.order-number-display {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #155724;
+    letter-spacing: 3px;
+    text-align: center;
+    margin: var(--spacing-sm) 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-number-note {
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: var(--spacing-sm);
+}
+
+/* CARDS DE INFORMACIÓN */
+.info-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-light);
+    border: 1px solid #e9ecef;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.info-card-icon {
+    background: linear-gradient(135deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-card-title {
+    color: #212529;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* TIMELINE DE PROCESO */
+.process-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: var(--spacing-lg) 0;
+}
+
+.process-timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pozoleria-orange), var(--success-green));
+    border-radius: 2px;
+    z-index: 0;
+}
+
+.process-step {
+    background: white;
+    border: 3px solid;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    animation: stepPulse 3s ease-in-out infinite;
+}
+
+.process-step.active {
+    border-color: var(--pozoleria-orange);
+    background: var(--pozoleria-orange);
+    color: white;
+}
+
+.process-step.completed {
+    border-color: var(--success-green);
+    background: var(--success-green);
+    color: white;
+}
+
+.process-step.pending {
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.process-step i {
+    font-size: 1.2rem;
+}
+
+.process-label {
+    text-align: center;
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+@keyframes stepPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* BOTONES DE ACCIÓN */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xl);
+    animation: slideInUp 1s ease-out 0.8s both;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--pozoleria-orange), var(--pozoleria-orange-dark));
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-medium);
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, var(--pozoleria-orange-dark), var(--pozoleria-orange));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+    color: white;
+}
+
+.secondary-btn {
+    background: white;
+    color: var(--pozoleria-orange);
+    border: 2px solid var(--pozoleria-orange);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+    background: var(--pozoleria-orange);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* CONTACTO RÁPIDO */
+.contact-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.contact-btn {
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    transition: all 0.3s ease;
+}
+
+.contact-btn.phone {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.contact-btn.whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: white;
+}
+
+.contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    color: white;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    .confirmation-container {
+        padding: var(--spacing-sm) 5px;
+    }
+    
+    .success-card {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .success-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .success-icon i {
+        font-size: 2rem;
+    }
+    
+    .success-title {
+        font-size: 1.6rem;
+    }
+    
+    .order-number-display {
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+    }
+    
+    .info-card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .process-step {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .process-step i {
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: var(--spacing-md);
+        border-top: 1px solid #e9ecef;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        z-index: 1000;
+        flex-direction: row;
+        gap: var(--spacing-xs);
+        margin-top: 0;
+    }
+    
+    .primary-btn {
+        flex: 2;
+        padding: var(--spacing-sm);
+        font-size: 1rem;
+    }
+    
+    .secondary-btn {
+        flex: 1;
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+    
+    /* Agregar padding bottom al contenedor para el footer fijo */
+    .confirmation-container {
+        padding-bottom: 100px;
+    }
+}
+
+/* ANIMACIONES */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.info-card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+.info-card:nth-child(2) { animation-delay: 0.1s; }
+.info-card:nth-child(3) { animation-delay: 0.2s; }
+.info-card:nth-child(4) { animation-delay: 0.3s; }
+</style>
+
+<div class="confirmation-container">
+    <!-- CARD PRINCIPAL DE ÉXITO -->
+    <div class="success-card">
+        <div class="success-icon-container">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        
+        <h1 class="success-title">¡Pedido Confirmado!</h1>
+        <p class="success-subtitle">
+            Tu pedido ha sido recibido exitosamente. Nuestro equipo se pondrá en contacto contigo muy pronto.
+        </p>
+        
+        <!-- NÚMERO DE PEDIDO -->
+        {% if numero_pedido %}
+        <div class="order-number-card">
+            <div class="order-number-header">
+                <div class="order-number-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <h3 class="order-number-title">Tu número de pedido</h3>
+            </div>
+            <div class="order-number-display">{{ numero_pedido }}</div>
+            <p class="order-number-note">
+                <i class="fas fa-shield-alt"></i>
+                Guarda este número para consultar el estatus de tu pedido
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- PROCESO DE ENTREGA -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="info-card-title">Estado de tu Pedido</h3>
+        </div>
+        
+        <div class="process-timeline">
+            <div class="process-step completed">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="process-step active">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <div class="process-step pending">
+                <i class="fas fa-motorcycle"></i>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <div class="process-label" style="color: #28a745;">Confirmado</div>
+            <div class="process-label" style="color: #e97c1a;">Preparando</div>
+            <div class="process-label">En camino</div>
+        </div>
+        
+        <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 20px; text-align: center;">
+            <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">
+                <i class="fas fa-info-circle" style="color: #17a2b8;"></i>
+                Te llamaremos en los próximos <strong>15-20 minutos</strong> para confirmar tu dirección
+            </p>
+        </div>
+    </div>
+
+    <!-- TIEMPO ESTIMADO -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon">
+                <i class="fas fa-stopwatch"></i>
+            </div>
+            <h3 class="info-card-title">Tiempo Estimado</h3>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div style="text-align: center; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                <div style="color: #856404; font-size: 1.5rem; font-weight: 700;">25-35</div>
+                <div style="color: #6c757d; font-size: 0.85rem;">minutos de preparación</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #d1ecf1; border-radius: 8px;">
+                <div style="color: #0c5460; font-size: 1.5rem; font-weight: 700;">10-15</div>
+                <div style="color: #6c757d; font-size: 0.85rem;">minutos de entrega</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACTO -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <h3 class="info-card-title">¿Necesitas Ayuda?</h3>
+        </div>
+        
+        <p style="color: #6c757d; margin-bottom: 15px; text-align: center;">
+            Si tienes alguna pregunta sobre tu pedido, contáctanos:
+        </p>
+        
+        <div class="contact-buttons">
+            <a href="tel:+525512345678" class="contact-btn phone">
+                <i class="fas fa-phone"></i>
+                Llamar
+            </a>
+            <a href="https://wa.me/525512345678" target="_blank" class="contact-btn whatsapp">
+                <i class="fab fa-whatsapp"></i>
+                WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN -->
+    <div class="action-buttons">
+        <a href="{{ url_for('catalogo') }}" class="primary-btn">
+            <i class="fas fa-utensils"></i>
+            Hacer otro pedido
+        </a>
+        <a href="{{ url_for('consultar_pedido') }}" class="secondary-btn">
+            <i class="fas fa-search"></i>
+            Consultar estatus
+        </a>
+    </div>
+</div>
+            </div>
+<script>
+// Limpiar el carrito después de confirmar el pedido
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎉 Página de confirmación cargada');
+    
+    // Funciones helper para carrito por sucursal
+    function getSucursalId() {
+        return localStorage.getItem('sucursal_id') || '';
+    }
+    
+    function setCarritoSucursal(carrito) {
+        var sucursalId = getSucursalId();
+        var carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal') || '{}');
+        carritos[sucursalId] = carrito;
+        localStorage.setItem('carritos_por_sucursal', JSON.stringify(carritos));
+    }
+    
+    // Limpiar el carrito de la sucursal actual
+    setCarritoSucursal([]);
+    
+    // También limpiar el carrito de sesión (sistema anterior)
+    sessionStorage.removeItem('carrito');
+    
+    // Actualizar el header del carrito si existe la función
+    if (window.actualizarCarritoHeader) {
+        window.actualizarCarritoHeader();
+    }
+    
+    // Animaciones de entrada secuenciales
+    const cards = document.querySelectorAll('.info-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${0.2 + (index * 0.1)}s`;
+    });
+    
+    // Efecto de confetti (opcional)
+    if (typeof confetti !== 'undefined') {
+        setTimeout(() => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }, 1000);
+    }
+    
+    // Feedback háptico en móvil
+    if (navigator.vibrate && window.innerWidth <= 768) {
+        navigator.vibrate([200, 100, 200]);
+    }
+    
+    console.log('✅ Carrito limpiado después de confirmar pedido');
+    console.log('🚀 Animaciones inicializadas');
+});
+
+// Funciones de utilidad para mejorar UX
+function copyOrderNumber() {
+    const orderNumber = document.querySelector('.order-number-display').textContent;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(orderNumber).then(() => {
+            showToast('Número de pedido copiado');
+        });
+    } else {
+        // Fallback para navegadores antiguos
+        const textArea = document.createElement('textarea');
+        textArea.value = orderNumber;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Número de pedido copiado');
+    }
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+// Hacer el número de pedido clickeable para copiar
+document.addEventListener('DOMContentLoaded', function() {
+    const orderNumber = document.querySelector('.order-number-display');
+    if (orderNumber) {
+        orderNumber.style.cursor = 'pointer';
+        orderNumber.title = 'Click para copiar';
+        orderNumber.addEventListener('click', copyOrderNumber);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,757 @@
+{# Parcial: editar_menuitem (sin extends) #}
+<div class="container-fluid px-4 py-3">
+    <!-- Header Mejorado -->
+    <div class="header-section mb-5">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="header-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-container me-3">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div>
+                            <h1 class="page-title mb-1">Editar Producto</h1>
+                            <p class="page-subtitle mb-0">
+                                Modifica la información del producto: 
+                                <span class="product-name">{{ item.nombre }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('admin.listar_menu') }}" class="btn btn-modern btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Menú
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="modern-form">
+        <div class="row g-4">
+            <!-- Información Básica -->
+            <div class="col-lg-8">
+                <div class="card modern-card mb-4">
+                    <div class="card-header modern-header">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Información Básica</h5>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control modern-input" type="text" name="nombre" 
+                                           id="floatingNombre" value="{{ item.nombre }}" required>
+                                    <label for="floatingNombre">
+                                        <i class="fas fa-utensils me-2"></i>Nombre del Producto *
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control modern-input" type="number" step="0.01" name="precio" 
+                                           id="floatingPrecio" value="{{ item.precio }}" required>
+                                    <label for="floatingPrecio">
+                                        <i class="fas fa-dollar-sign me-2"></i>Precio *
+                                    </label>
+                                    <div class="price-indicator">$</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control modern-textarea" name="descripcion" 
+                                      id="floatingDescripcion" style="height: 120px;" required>{{ item.descripcion }}</textarea>
+                            <label for="floatingDescripcion">
+                                <i class="fas fa-align-left me-2"></i>Descripción *
+                            </label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <select class="form-select modern-select" name="categoria_id" id="floatingCategoria" required>
+                                <option value="">Selecciona una categoría</option>
+                                {% for c in categorias %}
+                                    <option value="{{ c.id }}" {% if item.categoria_id == c.id %}selected{% endif %}>
+                                        {{ c.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="floatingCategoria">
+                                <i class="fas fa-tags me-2"></i>Categoría *
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagen del Producto -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header modern-header">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Imagen del Producto</h5>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        {% if item.imagen %}
+                            {% if item.imagen.startswith('http') %}
+                                {% set preview = item.imagen %}
+                            {% else %}
+                                {% set preview = url_for('static', filename='uploads/' + item.imagen.split('/static/uploads/')[-1].replace('uploads/','')) %}
+                            {% endif %}
+                            <div class="current-image-section mb-4">
+                                <div class="image-label mb-3">
+                                    <i class="fas fa-eye me-2"></i>Imagen Actual
+                                </div>
+                                <div class="current-image-container">
+                                    <img src="{{ preview }}" alt="{{ item.nombre }}" class="current-image">
+                                    <div class="image-overlay">
+                                        <i class="fas fa-search-plus"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="upload-section">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="upload-card">
+                                        <div class="upload-header">
+                                            <i class="fas fa-upload me-2"></i>
+                                            <span>Subir Nueva Imagen</span>
+                                        </div>
+                                        <input class="form-control modern-file" type="file" name="imagen" 
+                                               accept="image/*" id="imagenFile">
+                                        <div class="upload-info">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Deja vacío para mantener la imagen actual
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="upload-card">
+                                        <div class="upload-header">
+                                            <i class="fas fa-link me-2"></i>
+                                            <span>URL de Imagen</span>
+                                        </div>
+                                        {% set input_val = item.imagen %}
+                                        {% if item.imagen and not item.imagen.startswith('http') %}
+                                            {% set input_val = item.imagen.split('/static/uploads/')[-1].replace('uploads/','') %}
+                                        {% endif %}
+                                        <input class="form-control modern-input" type="url" name="imagen_url" 
+                                               value="{{ input_val }}" id="imagenUrl" 
+                                               placeholder="https://ejemplo.com/imagen.jpg">
+                                        <div class="upload-info">
+                                            <i class="fas fa-globe me-1"></i>
+                                            URL directa a una imagen en línea
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="preview-section mt-4" id="preview-container" style="display: none;">
+                                <div class="preview-header">
+                                    <i class="fas fa-eye me-2"></i>Vista Previa
+                                </div>
+                                <div class="preview-image-container">
+                                    <img id="image-preview" src="" alt="Vista previa" class="preview-image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones Personalizadas -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header modern-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="header-icon me-3">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Opciones Personalizadas</h5>
+                            </div>
+                            <button type="button" class="btn btn-modern btn-success" onclick="agregarOpcionPersonalizada()">
+                                <i class="fas fa-plus me-2"></i>Agregar Opción
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        <div id="opciones-personalizadas">
+                            {% for op in item.opciones %}
+                            <div class="option-card" id="opcion-row-{{ op.id }}">
+                                <div class="option-header">
+                                    <div class="option-title">
+                                        <i class="fas fa-cog me-2"></i>
+                                        <span>{{ op.titulo or 'Opción sin título' }}</span>
+                                    </div>
+                                    <button type="button" class="btn btn-modern btn-danger btn-sm" onclick="eliminarOpcionPersonalizada({{ op.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="option-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input class="form-control modern-input" type="text" name="opcion_titulo" 
+                                                       id="titulo_{{ loop.index0 }}" value="{{ op.titulo }}" 
+                                                       placeholder="Ej: Tamaño, Ingredientes extra">
+                                                <label for="titulo_{{ loop.index0 }}">
+                                                    <i class="fas fa-tag me-2"></i>Título de la opción
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <select class="form-select modern-select" name="opcion_tipo" id="tipo_{{ loop.index0 }}">
+                                                    <option value="radio" {% if op.tipo == 'radio' %}selected{% endif %}>Selección única</option>
+                                                    <option value="checkbox" {% if op.tipo == 'checkbox' %}selected{% endif %}>Múltiple selección</option>
+                                                </select>
+                                                <label for="tipo_{{ loop.index0 }}">
+                                                    <i class="fas fa-list-ul me-2"></i>Tipo
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="config-section">
+                                                <div class="config-header">Configuración</div>
+                                                <div class="form-check form-switch modern-switch">
+                                                    <input class="form-check-input" type="checkbox" name="opcion_obligatorio_{{ loop.index0 }}" 
+                                                           id="obligatorio_{{ loop.index0 }}" {% if op.obligatorio %}checked{% endif %}>
+                                                    <label class="form-check-label" for="obligatorio_{{ loop.index0 }}">Obligatorio</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="values-section">
+                                                <div class="values-header">
+                                                    <i class="fas fa-list me-2"></i>Valores y Precios
+                                                    <span class="format-badge">Formato: nombre|precio</span>
+                                                </div>
+                                                <textarea class="form-control modern-textarea" name="opcion_valores" rows="4" 
+                                                          placeholder="Ejemplos:&#10;Chico|0&#10;Mediano|15&#10;Grande|30">{% for val in op.valores %}{{ val.texto }}{% if val.precio %}|{{ val.precio }}{% endif %}
+{% endfor %}</textarea>
+                                                <div class="values-help">
+                                                    <div class="help-item">
+                                                        <i class="fas fa-dollar-sign me-2"></i>
+                                                        <strong>Escriba cada opción en una línea:</strong> texto|precio (precio 0 = gratis)
+                                                    </div>
+                                                    <div class="help-item">
+                                                        <i class="fas fa-lightbulb me-2"></i>
+                                                        Si no pones precio, será gratis automáticamente
+                                                    </div>
+                                                </div>
+                                                <div class="example-buttons">
+                                                    <button type="button" class="btn btn-modern btn-outline-success btn-sm" onclick="agregarEjemplo(this, 'tamano')">
+                                                        <i class="fas fa-plus me-1"></i>Ejemplo: Tamaños
+                                                    </button>
+                                                    <button type="button" class="btn btn-modern btn-outline-info btn-sm" onclick="agregarEjemplo(this, 'extras')">
+                                                        <i class="fas fa-plus me-1"></i>Ejemplo: Extras
+                                                    </button>
+                                                    <button type="button" class="btn btn-modern btn-outline-warning btn-sm" onclick="agregarEjemplo(this, 'preparacion')">
+                                                        <i class="fas fa-plus me-1"></i>Ejemplo: Preparación
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if not item.opciones %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="empty-title">Sin Opciones Personalizadas</div>
+                            <div class="empty-text">
+                                Este producto no tiene opciones personalizadas. 
+                                Puedes agregar opciones como tamaño, ingredientes extra, preparación, etc.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Lateral -->
+            <div class="col-lg-4">
+                <!-- Disponibilidad por Sucursal -->
+                <div class="card modern-card sidebar-card mb-4">
+                    <div class="card-header modern-header">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Disponibilidad por Establecimiento</h5>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        {% if sucursales %}
+                            <div class="availability-list">
+                                {% for s in sucursales %}
+                                    <div class="availability-item">
+                                        <div class="form-check form-switch modern-switch">
+                                            <input class="form-check-input" type="checkbox" name="disponible_{{ s.id }}" 
+                                                   id="disponible_{{ s.id }}" {% if disponibilidad.get(s.id, False) %}checked{% endif %}>
+                                            <label class="form-check-label" for="disponible_{{ s.id }}">
+                                                <div class="location-info">
+                                                    <div class="location-name">{{ s.nombre }}</div>
+                                                    <div class="location-address">{{ s.direccion }}</div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning modern-alert" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No hay establecimientos registrados.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Información del Producto -->
+                <div class="card modern-card sidebar-card mb-4">
+                    <div class="card-header modern-header">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Estadísticas</h5>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ item.opciones|length }}</div>
+                                <div class="stat-label">
+                                    <i class="fas fa-cogs me-1"></i>Opciones
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ item.sucursales|selectattr('disponible')|list|length }}</div>
+                                <div class="stat-label">
+                                    <i class="fas fa-store me-1"></i>Establecimientos
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">ID del Producto:</span>
+                                <span class="meta-value">#{{ item.id }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Categoría:</span>
+                                <span class="meta-value">{{ item.categoria.nombre if item.categoria else 'Sin categoría' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="card modern-card sidebar-card">
+                    <div class="card-header modern-header">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h5 class="card-title mb-0">Acciones</h5>
+                        </div>
+                    </div>
+                    <div class="card-body modern-body">
+                        <div class="action-buttons">
+                            <button class="btn btn-modern btn-success btn-lg w-100 mb-3" type="submit">
+                                <div class="btn-content">
+                                    <i class="fas fa-save me-2"></i>
+                                    <span>Guardar Cambios</span>
+                                </div>
+                            </button>
+                            <a href="{{ url_for('admin.listar_menu') }}" class="btn btn-modern btn-secondary w-100">
+                                <div class="btn-content">
+                                    <i class="fas fa-times me-2"></i>
+                                    <span>Cancelar</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección editar_menuitem.html) #}
+
+<script>
+let opcionesCount = {{ item.opciones|length }};
+
+// Modern JavaScript for enhanced functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add fade-in animation to cards
+    const cards = document.querySelectorAll('.modern-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('fade-in');
+        }, index * 100);
+    });
+    
+    // Enhanced form validation
+    const form = document.querySelector('.modern-form');
+    form.addEventListener('submit', function(e) {
+        const nombre = document.querySelector('input[name="nombre"]').value.trim();
+        const precio = document.querySelector('input[name="precio"]').value;
+        const descripcion = document.querySelector('textarea[name="descripcion"]').value.trim();
+        
+        if (!nombre || !precio || !descripcion) {
+            e.preventDefault();
+            showNotification('Por favor completa todos los campos obligatorios', 'error');
+            return false;
+        }
+        
+        showNotification('Guardando cambios...', 'info');
+    });
+});
+
+// Enhanced image preview functionality
+document.getElementById('imagenFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            showNotification('La imagen es demasiado grande. Máximo 2MB.', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showNotification('Por favor selecciona un archivo de imagen válido.', 'error');
+            this.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            showImagePreview(e.target.result);
+            showNotification('Vista previa cargada correctamente', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('imagenUrl').addEventListener('input', function(e) {
+    const url = e.target.value.trim();
+    if (url) {
+        // Basic URL validation
+        try {
+            new URL(url);
+            showImagePreview(url);
+        } catch {
+            showNotification('URL de imagen no válida', 'error');
+        }
+    } else {
+        hideImagePreview();
+    }
+});
+
+function showImagePreview(src) {
+    const preview = document.getElementById('image-preview');
+    const container = document.getElementById('preview-container');
+    
+    preview.src = src;
+    container.style.display = 'block';
+    container.classList.add('slide-up');
+    
+    // Add loading state
+    preview.onload = function() {
+        preview.style.opacity = '1';
+    };
+    preview.style.opacity = '0.5';
+}
+
+function hideImagePreview() {
+    const container = document.getElementById('preview-container');
+    container.style.display = 'none';
+}
+
+function agregarOpcionPersonalizada() {
+    const existingOptions = document.querySelectorAll('#opciones-personalizadas .option-card').length;
+    const container = document.getElementById('opciones-personalizadas');
+    
+    const opcionDiv = document.createElement('div');
+    opcionDiv.className = 'option-card slide-up';
+    opcionDiv.innerHTML = `
+        <div class="option-header">
+            <div class="option-title">
+                <i class="fas fa-cog me-2"></i>
+                <span>Nueva Opción ${existingOptions + 1}</span>
+            </div>
+            <button type="button" class="btn btn-modern btn-danger btn-sm" onclick="eliminarOpcion(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div class="option-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input class="form-control modern-input" type="text" name="opcion_titulo" 
+                               id="nuevo_titulo_${existingOptions}" placeholder="Ej: Tamaño, Ingredientes extra">
+                        <label for="nuevo_titulo_${existingOptions}">
+                            <i class="fas fa-tag me-2"></i>Título de la opción
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select class="form-select modern-select" name="opcion_tipo" id="nuevo_tipo_${existingOptions}">
+                            <option value="radio">Selección única</option>
+                            <option value="checkbox">Múltiple selección</option>
+                        </select>
+                        <label for="nuevo_tipo_${existingOptions}">
+                            <i class="fas fa-list-ul me-2"></i>Tipo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="config-section">
+                        <div class="config-header">Configuración</div>
+                        <div class="form-check form-switch modern-switch">
+                            <input class="form-check-input" type="checkbox" name="opcion_obligatorio_${existingOptions}" 
+                                   id="nuevo_obligatorio_${existingOptions}">
+                            <label class="form-check-label" for="nuevo_obligatorio_${existingOptions}">Obligatorio</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="values-section">
+                        <div class="values-header">
+                            <i class="fas fa-list me-2"></i>Valores y Precios
+                            <span class="format-badge">Formato: nombre|precio</span>
+                        </div>
+                        <textarea class="form-control modern-textarea" name="opcion_valores" rows="4" 
+                                  placeholder="Ejemplos:&#10;Chico|0&#10;Mediano|15&#10;Grande|30&#10;&#10;O para extras:&#10;Aguacate|10&#10;Queso extra|15&#10;Sin picante|0"></textarea>
+                        <div class="values-help">
+                            <div class="help-item">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                <strong>Escriba cada opción en una línea:</strong> texto|precio (precio 0 = gratis)
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Si no pones precio, será gratis automáticamente
+                            </div>
+                        </div>
+                        <div class="example-buttons">
+                            <button type="button" class="btn btn-modern btn-outline-success btn-sm" onclick="agregarEjemplo(this, 'tamano')">
+                                <i class="fas fa-plus me-1"></i>Ejemplo: Tamaños
+                            </button>
+                            <button type="button" class="btn btn-modern btn-outline-info btn-sm" onclick="agregarEjemplo(this, 'extras')">
+                                <i class="fas fa-plus me-1"></i>Ejemplo: Extras
+                            </button>
+                            <button type="button" class="btn btn-modern btn-outline-warning btn-sm" onclick="agregarEjemplo(this, 'preparacion')">
+                                <i class="fas fa-plus me-1"></i>Ejemplo: Preparación
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(opcionDiv);
+    
+    // Focus on the new title input
+    setTimeout(() => {
+        const titleInput = opcionDiv.querySelector('input[name="opcion_titulo"]');
+        titleInput.focus();
+    }, 300);
+    
+    showNotification('Nueva opción agregada', 'success');
+}
+
+function agregarEjemplo(button, tipo) {
+    const textarea = button.closest('.option-card').querySelector('textarea[name="opcion_valores"]');
+    const tituloInput = button.closest('.option-card').querySelector('input[name="opcion_titulo"]');
+    
+    let ejemplos = '';
+    let titulo = '';
+    
+    switch(tipo) {
+        case 'tamano':
+            titulo = 'Tamaño';
+            ejemplos = 'Chico|0\nMediano|15\nGrande|30';
+            break;
+        case 'extras':
+            titulo = 'Ingredientes Extra';
+            ejemplos = 'Aguacate|10\nQueso extra|15\nChile extra|5\nLimón extra|0';
+            break;
+        case 'preparacion':
+            titulo = 'Preparación';
+            ejemplos = 'Normal|0\nSin picante|0\nExtra picante|0\nSin cebolla|0';
+            break;
+    }
+    
+    if (tituloInput.value === '') {
+        tituloInput.value = titulo;
+    }
+    
+    // Si ya hay contenido, preguntar si reemplazar
+    if (textarea.value.trim() !== '') {
+        if (confirm('¿Reemplazar el contenido actual con el ejemplo?')) {
+            textarea.value = ejemplos;
+            showNotification(`Ejemplo de ${titulo.toLowerCase()} agregado`, 'success');
+        }
+    } else {
+        textarea.value = ejemplos;
+        showNotification(`Ejemplo de ${titulo.toLowerCase()} agregado`, 'success');
+    }
+    
+    // Animate the textarea
+    textarea.style.transform = 'scale(1.02)';
+    setTimeout(() => {
+        textarea.style.transform = 'scale(1)';
+    }, 200);
+}
+
+function eliminarOpcion(button) {
+    const card = button.closest('.option-card');
+    
+    // Add exit animation
+    card.style.transition = 'all 0.3s ease-out';
+    card.style.transform = 'translateX(-100%)';
+    card.style.opacity = '0';
+    
+    setTimeout(() => {
+        card.remove();
+        showNotification('Opción eliminada', 'info');
+    }, 300);
+}
+
+function eliminarOpcionPersonalizada(id) {
+    const row = document.getElementById('opcion-row-' + id);
+    if (row) {
+        // Add exit animation
+        row.style.transition = 'all 0.3s ease-out';
+        row.style.transform = 'translateX(-100%)';
+        row.style.opacity = '0';
+        
+        setTimeout(() => {
+            row.remove();
+            // Agregar campo oculto para indicar que se debe eliminar esta opción
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'eliminar_opcion';
+            input.value = id;
+            document.querySelector('form').appendChild(input);
+            
+            showNotification('Opción marcada para eliminación', 'info');
+        }, 300);
+    }
+}
+
+// Modern notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existing = document.querySelectorAll('.notification');
+    existing.forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const colors = {
+        success: '#28a745',
+        error: '#dc3545',
+        warning: '#ffc107',
+        info: '#17a2b8'
+    };
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+        ">
+            <i class="${icons[type]}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add CSS for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Enhanced form interactions
+document.querySelectorAll('.modern-input, .modern-select, .modern-textarea').forEach(input => {
+    input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'translateY(-2px)';
+    });
+    
+    input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'translateY(0)';
+    });
+});
+
+// Smooth scroll to top when form is submitted
+document.querySelector('.modern-form').addEventListener('submit', function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+</script>

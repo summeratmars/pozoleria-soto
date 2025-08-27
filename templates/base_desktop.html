@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pozolería Soto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --pozoleria-orange: #e97c1a;
+        }
+        
+        /* ESTILOS BASE ESCRITORIO */
+        body {
+            background-color: #fff8f0;
+        }
+        
+        /* NAVBAR ESCRITORIO */
+        .navbar {
+            background: linear-gradient(135deg, var(--pozoleria-orange) 0%, #d86b1a 100%) !important;
+            box-shadow: 0 4px 20px rgba(233, 124, 26, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1051;
+            border-bottom: 3px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .navbar-brand-container {
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .navbar-brand-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-image {
+            height: 65px;
+            width: auto;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-image:hover {
+            transform: rotate(5deg) scale(1.1);
+            border-color: #fff;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        
+        /* BOTONES NAVBAR ESCRITORIO */
+        .ordena-ahora-button {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a) !important;
+            color: white !important;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .ordena-ahora-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .ordena-ahora-button:hover::before {
+            left: 100%;
+        }
+        
+        .ordena-ahora-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+            color: white !important;
+        }
+        
+        .cart-button {
+            background: linear-gradient(45deg, #2ecc71, #27ae60) !important;
+            color: white !important;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .cart-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cart-button:hover::before {
+            left: 100%;
+        }
+        
+        .cart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+            color: white !important;
+        }
+        
+        .consulta-button {
+            background: linear-gradient(45deg, #3498db, #2980b9) !important;
+            color: white !important;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-radius: 25px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .consulta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .consulta-button:hover::before {
+            left: 100%;
+        }
+        
+        .consulta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            color: white !important;
+        }
+        
+        .cart-icon, .ordena-icon, .consulta-icon {
+            font-size: 1.1rem;
+            margin-right: 8px;
+        }
+        
+        /* CONTADOR CARRITO ESCRITORIO */
+        .cart-badge {
+            background: #ff4757 !important;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .cart-badge:not(:empty) {
+            animation: bounceIn 0.5s ease;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .cart-total {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-left: 8px;
+            color: inherit;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        /* RESPONSIVE ESCRITORIO */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .cart-total {
+                display: none !important;
+            }
+        }
+        
+        /* MODAL ESCRITORIO */
+        .modal-xl {
+            max-width: 1200px;
+        }
+        
+        .modal-content-moderno {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .imagen-producto-container {
+            height: 100%;
+            min-height: 500px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .btn-close-moderno {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close-moderno:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
+        }
+        
+        .imagen-principal {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .imagen-principal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .no-image-placeholder {
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .contenido-producto {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .opciones-scroll-container-completo {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+        
+        .producto-header-scroll {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f8f9fa;
+            padding-bottom: 20px;
+        }
+        
+        .producto-titulo-scroll {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--pozoleria-orange);
+            margin-bottom: 15px;
+        }
+        
+        .precio-base-scroll {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .producto-descripcion-scroll {
+            font-size: 1rem;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+        
+        /* OPCIONES ESCRITORIO */
+        .opcion-grupo-moderno {
+            margin-bottom: 35px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 4px solid var(--pozoleria-orange);
+        }
+        
+        .opcion-header {
+            margin-bottom: 20px;
+        }
+        
+        .opcion-titulo-moderno {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .badge-obligatorio {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .badge-opcional {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .opcion-descripcion {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .opciones-container {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .opcion-item-moderno {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .opcion-item-moderno::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(233, 124, 26, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .opcion-item-moderno:hover::before {
+            left: 100%;
+        }
+        
+        .opcion-item-moderno:hover {
+            border-color: var(--pozoleria-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 124, 26, 0.15);
+        }
+        
+        .opcion-item-moderno.selected {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-color: #28a745;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+        
+        .opcion-radio-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .opcion-radio-input {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        .opcion-radio-label {
+            flex: 1;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .radio-button {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #dee2e6;
+            display: inline-block;
+            margin-right: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .opcion-item-moderno.selected .radio-button {
+            border-color: white;
+            background: white;
+        }
+        
+        .opcion-item-moderno.selected .radio-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: #28a745;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* CONTROLES INFERIORES ESCRITORIO */
+        .controles-inferiores {
+            border-top: 2px solid #f8f9fa;
+            padding: 25px 30px;
+            background: white;
+        }
+        
+        .cantidad-y-precio {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .cantidad-controls-moderno {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn-cantidad-moderno {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--pozoleria-orange);
+            background: white;
+            color: var(--pozoleria-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cantidad-moderno:hover {
+            background: var(--pozoleria-orange);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .cantidad-display-moderno {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .precio-total-moderno {
+            text-align: right;
+        }
+        
+        .precio-final {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #28a745;
+            text-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+        }
+        
+        .btn-agregar-moderno {
+            width: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-agregar-moderno::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-agregar-moderno:hover::before {
+            left: 100%;
+        }
+        
+        .btn-agregar-moderno:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        
+        /* CARDS PRODUCTOS ESCRITORIO */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .card-img-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+        
+        .category-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(233, 124, 26, 0.3);
+        }
+        
+        .card-body {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .card-text {
+            font-size: 1rem;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        
+        .btn-agregar-menu {
+            background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-agregar-menu::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-agregar-menu:hover::before {
+            left: 100%;
+        }
+        
+        .btn-agregar-menu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 124, 26, 0.4);
+        }
+        
+        /* CATEGORÍAS ESCRITORIO */
+        .categories-section {
+            margin-bottom: 50px;
+        }
+        
+        .categories-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .category-item {
+            text-align: center;
+        }
+        
+        .category-btn {
+            background: white;
+            border: 2px solid var(--pozoleria-orange);
+            border-radius: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--pozoleria-orange);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .category-btn:hover {
+            background: var(--pozoleria-orange);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(233, 124, 26, 0.3);
+        }
+        
+        .category-btn.active {
+            background: var(--pozoleria-orange);
+            color: white;
+            box-shadow: 0 5px 20px rgba(233, 124, 26, 0.4);
+        }
+        
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .category-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .category-count {
+            background: #ff4757;
+            color: white;
+            border-radius: 12px;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        /* HEADER PÁGINA ESCRITORIO */
+        .catalog-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .display-4 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--pozoleria-orange);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(233, 124, 26, 0.2);
+        }
+        
+        .lead {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+        
+        .decorative-line {
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pozoleria-orange), transparent);
+            border-radius: 2px;
+        }
+        
+        /* TOAST ESCRITORIO */
+        .toast-carrito {
+            min-width: 400px;
+            max-width: 450px;
+        }
+        
+        /* WHATSAPP BUTTON ESCRITORIO */
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: #fff;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 2px 2px 3px #999;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            animation: pulse 2s infinite;
+        }
+        
+        .whatsapp-float:hover {
+            background-color: #128c7e;
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+            text-decoration: none;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+        
+        /* UTILIDADES ESCRITORIO */
+        .container {
+            max-width: 1200px;
+        }
+        
+        .py-4 {
+            padding-top: 3rem !important;
+            padding-bottom: 3rem !important;
+        }
+        
+        .mb-5 {
+            margin-bottom: 3rem !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Escritorio -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex justify-content-between align-items-center px-3 px-lg-4">
+            <a href="{{ url_for('index') }}" class="navbar-brand-container" style="text-decoration: none;">
+                <img src="{{ url_for('static', filename='logo_soto.png') }}" 
+                     alt="Logo Pozolería Soto" 
+                     class="logo-image">
+            </a>
+            
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <button type="button" class="btn btn-light fw-bold" id="btnCambiarSucursal" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4);border-radius:25px;padding:12px 18px;display:flex;align-items:center;gap:8px;letter-spacing:.5px;">
+                    <i class="fas fa-store"></i>
+                    <span id="sucursalActualLabel" style="font-weight:700;font-size:.9rem;">Sucursal</span>
+                </button>
+                <a href="{{ url_for('catalogo') }}" class="btn ordena-ahora-button">
+                    <i class="fas fa-utensils ordena-icon"></i>
+                    <span class="ordena-text">Ordena Aquí</span>
+                </a>
+                <a href="{{ url_for('consultar_pedido') }}" class="btn consulta-button">
+                    <i class="fas fa-search consulta-icon"></i>
+                    <span class="consulta-text">Mi Pedido</span>
+                </a>
+                <a href="{{ url_for('carrito') }}" class="btn cart-button position-relative">
+                    <i class="bi bi-cart3 cart-icon"></i>
+                    <span class="cart-text">Mi Carrito</span>
+                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">0</span>
+                    <span id="cart-total" class="cart-total">$0.00</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- JavaScript Escritorio -->
+    <script>
+        // Actualizar carrito header SOLO para escritorio (backend con fallback)
+        function actualizarCarritoHeader() {
+            fetch('/get_carrito_estado')
+                .then(response => response.json())
+                .then(data => {
+                    var cartCount = document.getElementById('cart-count');
+                    var cartTotal = document.getElementById('cart-total');
+                    
+                    // Actualizar contador
+                    if (cartCount) {
+                        cartCount.textContent = data.cantidad || 0;
+                        // Ocultar badge cuando no hay productos
+                        if (data.cantidad === 0) {
+                            cartCount.style.display = 'none';
+                        } else {
+                            cartCount.style.display = 'flex';
+                        }
+                    }
+                    
+                    // Actualizar total - CSS maneja la visibilidad responsive
+                    if (cartTotal) {
+                        cartTotal.textContent = data.total_formateado || '$0.00';
+                    }
+                    
+                    console.log('💻 Carrito escritorio actualizado (backend) - Cantidad:', data.cantidad, 'Total:', data.total_formateado);
+                })
+                .catch(error => {
+                    console.error('❌ Error al actualizar carrito escritorio:', error);
+                    
+                    // Fallback: mostrar valores por defecto
+                    var cartCount = document.getElementById('cart-count');
+                    var cartTotal = document.getElementById('cart-total');
+                    
+                    if (cartCount) {
+                        cartCount.textContent = 0;
+                        cartCount.style.display = 'none';
+                    }
+                    if (cartTotal) {
+                        cartTotal.textContent = '$0.00';
+                    }
+                });
+        }
+        
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', actualizarCarritoHeader);
+    document.addEventListener('DOMContentLoaded', inicializarCambioSucursal);
+        
+        // Hacer función global
+        window.actualizarCarritoHeader = actualizarCarritoHeader;
+
+        /********************* Cambio de Sucursal (Escritorio) *********************/
+        function inicializarCambioSucursal(){
+            try {
+                const btn = document.getElementById('btnCambiarSucursal');
+                if(!btn) return;
+                actualizarEtiquetaSucursal();
+                btn.addEventListener('click', abrirModalSucursal);
+            } catch(err){ console.warn('Init cambio sucursal escritorio error', err); }
+        }
+
+        function getSucursalId(){
+            return localStorage.getItem('sucursal_id') || '1';
+        }
+
+        function actualizarEtiquetaSucursal(){
+            const label = document.getElementById('sucursalActualLabel');
+            if(!label) return;
+            const id = getSucursalId();
+            let nombre = 'Sucursal '+id;
+            try {
+                const cache = JSON.parse(localStorage.getItem('sucursales_cache')||'[]');
+                const found = cache.find(s=> String(s.id)===String(id));
+                if(found) nombre = (found.nombre||('Sucursal '+id)).split(' ')[0];
+            } catch{}
+            label.textContent = nombre;
+        }
+
+        function abrirModalSucursal(){
+            let existing = document.getElementById('modalCambiarSucursal');
+            if(!existing){
+                const modalHtml = `
+                <div class="modal fade" id="modalCambiarSucursal" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header bg-light">
+                        <h5 class="modal-title"><i class='fas fa-store me-2'></i>Cambiar Sucursal</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body" id="listaSucursalesModal">
+                        <p class="text-muted small mb-2">Selecciona la sucursal desde la que deseas ordenar.</p>
+                        <div class="sucursales-loading text-center py-4">
+                           <div class="spinner-border text-warning" role="status"><span class="visually-hidden">Cargando...</span></div>
+                        </div>
+                      </div>
+                      <div class="modal-footer d-flex justify-content-between">
+                        <small class="text-muted">La sucursal afecta disponibilidad y carrito.</small>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+            const modalEl = document.getElementById('modalCambiarSucursal');
+            const bsModal = new bootstrap.Modal(modalEl);
+            bsModal.show();
+            cargarSucursalesEnModal();
+        }
+
+        function cargarSucursalesEnModal(){
+            const cont = document.getElementById('listaSucursalesModal');
+            if(!cont) return;
+            fetch('/api/sucursales')
+              .then(r=>r.json())
+              .then(data=>{
+                  let lista = data.sucursales || [];
+                  localStorage.setItem('sucursales_cache', JSON.stringify(lista));
+                  const actual = getSucursalId();
+                  const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal')||'{}');
+                  if(!lista.length){ lista = [{id:1,nombre:'Sucursal 1',abierta_ahora:true}]; }
+                  const html = lista.map(s=>{
+                      const carrito = carritos[s.id] || [];
+                      let totalCant = 0; let totalMonto = 0;
+                      carrito.forEach(it=>{
+                          const cant = it.cantidad||1; totalCant += cant;
+                          let precioBase = 0;
+                          if (typeof it.precio === 'number') precioBase = it.precio; else if (typeof it.precio_base === 'number') precioBase = it.precio_base; else if (typeof it.precio_unitario === 'number') precioBase = it.precio_unitario;
+                          let extras = 0;
+                          if (Array.isArray(it.opciones_personalizadas)) {
+                              it.opciones_personalizadas.forEach(op=>{
+                                  const p = parseFloat(op.precio || op.precio_adicional || 0) || 0; extras += p;
+                              });
+                          }
+                          totalMonto += (precioBase + extras) * cant;
+                      });
+                      const countBadge = totalCant>0 ? `<span class='badge bg-primary ms-1' title='Productos en carrito'>${totalCant}</span>` : '';
+                      const montoBadge = totalMonto>0 ? `<span class='badge bg-warning text-dark ms-1' title='Total estimado carrito'>$${totalMonto.toFixed(2)}</span>` : '';
+                      return `<button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ${String(s.id)===String(actual)?'active':''}" onclick="seleccionarSucursal('${s.id}')">
+                                <span class='d-flex align-items-center'>${s.nombre}${countBadge}${montoBadge}</span>
+                                <span class='badge ${s.abierta_ahora?'bg-success':'bg-danger'}'>${s.abierta_ahora?'Abierto':'Cerrado'}</span>
+                              </button>`;
+                  }).join('');
+                  cont.innerHTML = '<div class="list-group">'+html+'</div>';
+              })
+              .catch(()=>{
+                  const actual = getSucursalId();
+                  cont.innerHTML = `<div class='alert alert-warning'>No se pudo cargar la lista. Fallback.<div class='mt-2'><button class='btn btn-sm btn-outline-primary ${actual==='1'?'active':''}' onclick="seleccionarSucursal('1')">Sucursal 1</button></div></div>`;
+              });
+        }
+
+        window.seleccionarSucursal = function(id){
+            const anterior = getSucursalId();
+            if (anterior === id){
+                const modalEl = document.getElementById('modalCambiarSucursal');
+                if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+                return;
+            }
+            // Confirmación si carrito actual (localStorage) tiene productos
+            const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal')||'{}');
+            const carritoAnterior = carritos[anterior] || [];
+            if (carritoAnterior.length>0){
+                if(!confirm('Cambiar de sucursal vaciará tu carrito actual de '+carritoAnterior.length+' producto(s). ¿Continuar?')) return;
+            }
+            localStorage.setItem('sucursal_id', id);
+            actualizarEtiquetaSucursal();
+            actualizarCarritoHeader();
+            const modalEl = document.getElementById('modalCambiarSucursal');
+            if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+            // Recargar catálogo para reflejar disponibilidad
+            window.location.href = '/catalogo';
+        }
+        /******************* Fin Cambio de Sucursal (Escritorio) *******************/
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/525575251742?text=¡Hola!%20Me%20interesa%20hacer%20un%20pedido%20de%20pozole" 
+       target="_blank" 
+       class="whatsapp-float"
+       title="¡Contáctanos por WhatsApp!">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+        <style>
+            .notif-banner{position:fixed;bottom:15px;left:15px;right:15px;z-index:2000;max-width:420px;margin:0 auto;background:#1f1f1f;color:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px;font-size:.9rem;animation:slideInNotif .45s ease}
+            @keyframes slideInNotif{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+            .notif-banner h6{margin:0;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:6px}
+            .notif-banner-buttons{display:flex;gap:8px;flex-wrap:wrap}
+            .notif-btn{flex:1 1 auto;border:none;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:.85rem;transition:.25s}
+            .notif-btn-allow{background:linear-gradient(135deg,#28a745,#20c997);color:#fff}
+            .notif-btn-allow:hover{filter:brightness(1.08)}
+            .notif-btn-later{background:#444;color:#eee}
+            .notif-btn-later:hover{background:#555}
+            .notif-close{position:absolute;top:6px;right:10px;background:transparent;color:#bbb;border:none;font-size:1.1rem;cursor:pointer}
+            .notif-close:hover{color:#fff}
+        </style>
+            <script>
+                // Banner de notificaciones unificado (versión con debug detallado)
+                (function(){
+                    const KEY_FLAG='notif_perm_requested_v1';
+                    if(!('Notification' in window)) { console.debug('[Notif] API no soportada'); return; }
+                    console.debug('[Notif] Estado inicial permission =', Notification.permission, 'secureContext?', window.isSecureContext);
+                    const perm = Notification.permission;
+                    if(perm==='granted'){ localStorage.setItem(KEY_FLAG,'1'); return; }
+                    if(localStorage.getItem(KEY_FLAG)==='1'){ console.debug('[Notif] Ya se preguntó previamente (flag)'); return; }
+                    if(perm==='denied'){ localStorage.setItem(KEY_FLAG,'1'); console.debug('[Notif] Ya está denegado por el usuario'); return; }
+                    document.addEventListener('DOMContentLoaded',()=>{
+                        const insecure = !window.isSecureContext && location.hostname!=='localhost' && location.hostname!=='127.0.0.1';
+                        const banner=document.createElement('div');
+                        banner.className='notif-banner';
+                        banner.innerHTML=`<button class='notif-close' aria-label='Cerrar'>&times;</button>
+                             <h6><i class=\"fas fa-bell\"></i> ¿Recibir notificaciones?</h6>
+                             <p class='notif-msg' style='margin:0;font-size:.8rem;line-height:1.3'>${insecure?"Para activar notificaciones usa HTTPS o localhost.":"Activa avisos cuando tu pedido cambie de estado (Preparación, Camino, Entregado)."}</p>
+                             <div class='notif-banner-buttons'>
+                                 <button class='notif-btn notif-btn-allow' ${insecure?'disabled style=\"opacity:.5;cursor:not-allowed;\"':''}><i class='fas fa-check'></i>Permitir</button>
+                                 <button class='notif-btn notif-btn-later'><i class='fas fa-clock'></i>Más tarde</button>
+                             </div>`;
+                        document.body.appendChild(banner);
+                        const btnAllow=banner.querySelector('.notif-btn-allow');
+                        const btnLater=banner.querySelector('.notif-btn-later');
+                        const btnClose=banner.querySelector('.notif-close');
+                        const msgEl=banner.querySelector('.notif-msg');
+                        function cerrar(save){ if(save) localStorage.setItem(KEY_FLAG,'1'); banner.style.opacity='0'; setTimeout(()=>banner.remove(),250); }
+                        function feedback(texto, ok){ if(msgEl){ msgEl.textContent=texto; msgEl.style.color= ok?'#5cd488':'#ffce56'; } }
+                        function notiPrueba(){ try { new Notification('Notificaciones activadas', { body:'Te avisaremos el progreso de tu pedido.', icon:'/static/logo_soto.png' }); } catch(e){ console.warn('[Notif] Falló noti prueba', e); } }
+                        function manejarResultado(r){ console.debug('[Notif] resultado requestPermission:', r); if(r==='granted'){ feedback('Permiso concedido',true); notiPrueba(); setTimeout(()=>cerrar(true),800);} else if(r==='denied'){ feedback('Permiso denegado',false); cerrar(true);} else { feedback('No decidido ahora',false); cerrar(false);} }
+                        function chequeoPost(){ const p=Notification.permission; console.debug('[Notif] chequeoPost ->', p); if(p!=='default') manejarResultado(p); }
+                        function solicitar(){
+                            console.debug('[Notif] Click Permitir');
+                            if(insecure){ feedback('Necesitas HTTPS para permitir',false); console.warn('[Notif] Contexto no seguro'); return; }
+                            try {
+                                if(typeof Notification.requestPermission!=='function'){ feedback('API requestPermission no disponible',false); console.error('[Notif] requestPermission no es función'); return; }
+                                let ret;
+                                try {
+                                    ret = Notification.requestPermission(res=>{ if(res){ console.debug('[Notif] callback legacy', res); manejarResultado(res); } });
+                                } catch(inner){ console.error('[Notif] Error invocando requestPermission (callback style)', inner); }
+                                if(ret && typeof ret.then==='function'){
+                                    ret.then(r=>{ console.debug('[Notif] promesa resuelta', r); manejarResultado(r); }).catch(e=>{ console.error('[Notif] promesa rechazada', e); feedback('Error permiso',false); cerrar(true); });
+                                } else {
+                                    // Fallback: revisar después de un tiempo
+                                    setTimeout(chequeoPost, 1200);
+                                }
+                            } catch(e){ console.error('[Notif] error requestPermission', e); feedback('Error al solicitar',false); cerrar(true); }
+                        }
+                        // Exponer para pruebas manuales
+                        window.__debugSolicitarNotificaciones = solicitar;
+                        btnAllow.addEventListener('click',solicitar);
+                        btnLater.addEventListener('click',()=>{ console.debug('[Notif] Click Más tarde'); cerrar(false); });
+                        btnClose.addEventListener('click',()=>{ console.debug('[Notif] Click cerrar (X)'); cerrar(true); });
+                    });
+                })();
+            </script>
+</body>
+</html>

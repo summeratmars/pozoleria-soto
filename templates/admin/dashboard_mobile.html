@@ -1,0 +1,188 @@
+{% extends "admin/base_admin_mobile.html" %}
+{% block title %}Dashboard - Admin Móvil{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+{% block content %}
+<!-- Stats Cards Grid -->
+<div class="row g-3 mb-4">
+    <!-- Total Pedidos -->
+    <div class="col-6">
+        <div class="stat-card-mobile" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+            <div class="stat-number">{{ total_pedidos_hoy if total_pedidos_hoy is defined else '0' }}</div>
+            <div class="stat-label">
+                <i class="fas fa-shopping-cart me-1"></i>
+                Pedidos Hoy
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ingresos Hoy -->
+    <div class="col-6">
+        <div class="stat-card-mobile" style="background: linear-gradient(135deg, #28a745, #20c997);">
+            <div class="stat-number">${{ "%.0f"|format(ingresos_hoy if ingresos_hoy else 0) }}</div>
+            <div class="stat-label">
+                <i class="fas fa-dollar-sign me-1"></i>
+                Ingresos Hoy
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pedidos Pendientes -->
+    <div class="col-6">
+        <div class="stat-card-mobile" style="background: linear-gradient(135deg, #ffc107, #ffb300);">
+            <div class="stat-number">{{ pedidos_pendientes if pedidos_pendientes is defined else '0' }}</div>
+            <div class="stat-label">
+                <i class="fas fa-clock me-1"></i>
+                Pendientes
+            </div>
+        </div>
+    </div>
+    
+    <!-- En Camino -->
+    <div class="col-6">
+        <div class="stat-card-mobile" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+            <div class="stat-number">{{ pedidos_en_camino if pedidos_en_camino is defined else '0' }}</div>
+            <div class="stat-label">
+                <i class="fas fa-motorcycle me-1"></i>
+                En Camino
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card-mobile mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-6">
+                <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-primary btn-mobile">
+                    <i class="fas fa-plus"></i>Nuevo Producto
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-mobile">
+                    <i class="fas fa-tags"></i>Nueva Categoría
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for('admin.nueva_sucursal') }}" class="btn btn-warning btn-mobile">
+                    <i class="fas fa-store"></i>Nueva Sucursal
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-info btn-mobile">
+                    <i class="fas fa-list"></i>Ver Pedidos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pedidos Recientes -->
+{% if pedidos_recientes %}
+<div class="card-mobile mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-clock me-2"></i>Pedidos Recientes
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for pedido in pedidos_recientes %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ pedido.numero_pedido }}</h6>
+                        <p class="mb-1 small text-muted">{{ pedido.nombre }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ pedido.fecha.strftime('%H:%M') if pedido.fecha else '' }}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge {% if pedido.estado == 'entregado' %}bg-success{% elif pedido.estado == 'en_camino' %}bg-warning{% elif pedido.estado == 'preparando' %}bg-info{% else %}bg-secondary{% endif %} mb-1">
+                            {{ pedido.estado.replace('_', ' ').title() if pedido.estado else 'Pendiente' }}
+                        </span>
+                        <div class="fw-bold text-success small">
+                            ${{ "%.2f"|format(pedido.total) if pedido.total else '0.00' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer bg-light text-center">
+            <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-eye me-1"></i>Ver Todos los Pedidos
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Resumen de Sucursales -->
+{% if sucursales_stats %}
+<div class="card-mobile mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-store me-2"></i>Estado de Sucursales
+        </h6>
+    </div>
+    <div class="card-body">
+        {% for sucursal in sucursales_stats %}
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+            <div>
+                <h6 class="mb-0">{{ sucursal.nombre }}</h6>
+                <small class="text-muted">{{ sucursal.direccion or 'Sin dirección' }}</small>
+            </div>
+            <div class="text-end">
+                <span class="badge {% if sucursal.activa %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if sucursal.activa %}Activa{% else %}Inactiva{% endif %}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Productos Más Vendidos -->
+<div class="card-mobile">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Resumen del Sistema
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-4">
+                <div class="text-primary">
+                    <i class="fas fa-utensils fa-2x mb-2"></i>
+                    <h5 class="mb-0">{{ total_productos if total_productos is defined else '0' }}</h5>
+                    <small class="text-muted">Productos</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-success">
+                    <i class="fas fa-tags fa-2x mb-2"></i>
+                    <h5 class="mb-0">{{ total_categorias if total_categorias is defined else '0' }}</h5>
+                    <small class="text-muted">Categorías</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-info">
+                    <i class="fas fa-store fa-2x mb-2"></i>
+                    <h5 class="mb-0">{{ total_sucursales if total_sucursales is defined else '0' }}</h5>
+                    <small class="text-muted">Sucursales</small>
+                </div>
+            </div>
+        </div>
+    </div>
+ </div>
+{% endblock %}

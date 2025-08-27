@@ -1,0 +1,33 @@
+{# Parcial: listar_pedidos (sin extends) #}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 style="color:var(--pozoleria-orange);">Pedidos</h2>
+        <a href="{{ url_for('admin.nuevo_pedido') }}" class="btn btn-success">Nuevo pedido</a>
+    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Sucursal</th>
+                <th>Productos</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td>{{ p.cliente }}</td>
+                <td>{{ p.fecha.strftime('%d/%m/%Y %H:%M') if p.fecha else '' }}</td>
+                <td>{{ sucursales[p.sucursal_id] if p.sucursal_id in sucursales else '' }}</td>
+                <td>{{ p.productos }}</td>
+                <td>${{ p.total }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">No hay pedidos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

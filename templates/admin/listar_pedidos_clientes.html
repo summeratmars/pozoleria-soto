@@ -1,0 +1,604 @@
+{# Parcial: listar_pedidos_clientes (sin extends) #}
+<div class="container py-4">
+    <!-- Header Responsivo -->
+    <div class="row align-items-center mb-4">
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <h2 style="color:var(--pozoleria-orange); font-weight: 700;">
+                <i class="bi bi-clipboard-check me-2"></i> 
+                <span class="d-none d-sm-inline">Pedidos en línea</span>
+                <span class="d-sm-none">Pedidos</span>
+            </h2>
+        </div>
+        <div class="col-12 col-md-4">
+            <!-- Botones de filtro móvil -->
+            <div class="d-block d-lg-none">
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" 
+                            id="filtroMovil" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-funnel"></i> Filtrar pedidos
+                    </button>
+                    <ul class="dropdown-menu w-100" aria-labelledby="filtroMovil">
+                        <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('todos')">
+                            <i class="bi bi-list"></i> Todos (<span id="count-todos-mobile">0</span>)
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('Pendiente')">
+                            <i class="bi bi-clock text-warning"></i> Pendientes (<span id="count-pendientes-mobile">0</span>)
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('En camino')">
+                            <i class="bi bi-truck text-info"></i> En camino (<span id="count-en-camino-mobile">0</span>)
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('Entregado')">
+                            <i class="bi bi-check-circle text-success"></i> Entregados (<span id="count-entregados-mobile">0</span>)
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Botones de filtro escritorio -->
+            <div class="d-none d-lg-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-secondary btn-sm" onclick="filtrarPorEstado('todos')">
+                    <i class="bi bi-list"></i> Todos (<span id="count-todos">0</span>)
+                </button>
+                <button class="btn btn-outline-warning btn-sm" onclick="filtrarPorEstado('Pendiente')">
+                    <i class="bi bi-clock"></i> Pendientes (<span id="count-pendientes">0</span>)
+                </button>
+                <button class="btn btn-outline-info btn-sm" onclick="filtrarPorEstado('En camino')">
+                    <i class="bi bi-truck"></i> En camino (<span id="count-en-camino">0</span>)
+                </button>
+                <button class="btn btn-outline-success btn-sm" onclick="filtrarPorEstado('Entregado')">
+                    <i class="bi bi-check-circle"></i> Entregados (<span id="count-entregados">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista móvil: Cards -->
+    <div class="d-block d-lg-none mobile-orders-container">
+        {% for p in pedidos %}
+        <div class="card mb-3 order-card pedido-row" data-estado="{{ p.estado }}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-person-circle me-1"></i>{{ p.nombre }}
+                    </h6>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        {{ p.fecha.strftime('%d/%m/%Y %H:%M') if p.fecha else '' }}
+                    </small>
+                </div>
+                <div class="estado-badge">
+                    {% if p.estado == 'Pendiente' %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-clock-fill"></i> Pendiente
+                        </span>
+                    {% elif p.estado == 'En camino' %}
+                        <span class="badge bg-info">
+                            <i class="bi bi-truck"></i> En camino
+                        </span>
+                    {% else %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle-fill"></i> Entregado
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Información básica -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="info-item">
+                            <i class="bi bi-telephone-fill text-success"></i>
+                            <a href="tel:{{ p.telefono }}" class="ms-1 text-decoration-none">
+                                {{ p.telefono }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-item">
+                            <i class="bi bi-shop text-secondary"></i>
+                            <span class="ms-1">{{ sucursales[p.sucursal_id] if p.sucursal_id in sucursales else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-item">
+                            <i class="bi bi-currency-dollar text-success"></i>
+                            <strong class="ms-1 text-success">${{ "%.2f"|format(p.total) }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-item">
+                            {% if p.forma_pago == 'efectivo' %}
+                                <i class="bi bi-cash text-success"></i>
+                                <span class="ms-1">Efectivo</span>
+                                {% if p.cambio_para %}
+                                    <br><small class="text-muted ms-3">Cambio: ${{ "%.2f"|format(p.cambio_para) }}</small>
+                                {% endif %}
+                            {% elif p.forma_pago == 'transferencia' %}
+                                <i class="bi bi-bank text-primary"></i>
+                                <span class="ms-1">Transferencia</span>
+                                {% if p.comprobante_transferencia %}
+                                    <br><small class="text-success ms-3"><i class="bi bi-check-circle"></i> Confirmado</small>
+                                {% else %}
+                                    <br><small class="text-warning ms-3"><i class="bi bi-exclamation-triangle"></i> Pendiente</small>
+                                {% endif %}
+                            {% else %}
+                                <i class="bi bi-credit-card text-secondary"></i>
+                                <span class="ms-1">{{ p.forma_pago or 'N/A' }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-outline-info btn-sm w-100" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#direccion-mobile-{{ p.id }}">
+                            <i class="bi bi-geo-alt"></i> Ver dirección
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary btn-sm w-100" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#productos-mobile-{{ p.id }}">
+                            <i class="bi bi-cart3"></i> Ver productos
+                        </button>
+                    </div>
+                    {% if p.estado != 'Entregado' %}
+                    <div class="col-12 mt-2">
+                        {% if p.estado == 'Pendiente' %}
+                            <button class="btn btn-warning btn-sm w-100" onclick="cambiarEstado({{ p.id }}, 'En camino')">
+                                <i class="bi bi-truck"></i> Marcar en camino
+                            </button>
+                        {% elif p.estado == 'En camino' %}
+                            <button class="btn btn-success btn-sm w-100" onclick="cambiarEstado({{ p.id }}, 'Entregado')">
+                                <i class="bi bi-check-circle"></i> Marcar entregado
+                            </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Dirección colapsable -->
+                <div class="collapse mt-3" id="direccion-mobile-{{ p.id }}">
+                    <div class="card card-body bg-light">
+                        <h6 class="mb-2"><i class="bi bi-geo-alt-fill text-danger"></i> Dirección de entrega</h6>
+                        {% if p.calle %}
+                            <div class="direccion-detalle">
+                                <div><strong>Calle:</strong> {{ p.calle }}</div>
+                                <div><strong>Número:</strong> {{ p.numero }}</div>
+                                <div><strong>Colonia:</strong> {{ p.colonia }}</div>
+                                <div><strong>Entre calles:</strong> {{ p.entre_calles }}</div>
+                                <div><strong>Referencia:</strong> {{ p.referencia }}</div>
+                            </div>
+                        {% else %}
+                            <div>{{ p.direccion }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Productos colapsable -->
+                <div class="collapse mt-3" id="productos-mobile-{{ p.id }}">
+                    <div class="card card-body bg-light">
+                        <h6 class="mb-2"><i class="bi bi-cart-fill text-primary"></i> Productos del pedido</h6>
+                        {% set productos_list = p.productos|fromjson %}
+                        {% if productos_list %}
+                            {% for producto in productos_list %}
+                                <div class="producto-item mb-2 p-2 bg-white rounded">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <strong class="text-dark">{{ producto.nombre }}</strong>
+                                            <div class="small text-muted">Cantidad: {{ producto.cantidad }}</div>
+                                            {% if producto.opciones_personalizadas %}
+                                                <div class="small text-info">
+                                                    <i class="bi bi-gear"></i> {{ producto.opciones_personalizadas|join(", ") }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="text-success">${{ "%.2f"|format(producto.precio_total) }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<hr class="my-1">{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-muted">{{ p.productos }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size:3em; color: var(--pozoleria-orange);"></i>
+            <h5 class="mt-3 text-muted">No hay pedidos en línea</h5>
+            <p class="text-muted">Los pedidos aparecerán aquí cuando los clientes realicen órdenes</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vista escritorio: Tabla original -->
+    <!-- Vista escritorio: Tabla original -->
+    <div class="d-none d-lg-block">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><i class="bi bi-person"></i> Cliente</th>
+                        <th><i class="bi bi-telephone"></i> Teléfono</th>
+                        <th><i class="bi bi-geo-alt"></i> Dirección</th>
+                        <th><i class="bi bi-shop"></i> Sucursal</th>
+                        <th><i class="bi bi-cart"></i> Productos</th>
+                        <th><i class="bi bi-currency-dollar"></i> Total</th>
+                        <th><i class="bi bi-credit-card"></i> Forma de pago</th>
+                        <th><i class="bi bi-calendar"></i> Fecha</th>
+                        <th><i class="bi bi-flag"></i> Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pedidos %}
+                    <tr class="pedido-row" data-estado="{{ p.estado }}">
+                        <td>
+                            <strong>{{ p.nombre }}</strong>
+                        </td>
+                        <td>
+                            <a href="tel:{{ p.telefono }}" class="text-decoration-none">
+                                <i class="bi bi-telephone-fill text-success"></i> {{ p.telefono }}
+                            </a>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#direccion-{{ p.id }}" aria-expanded="false">
+                                <i class="bi bi-eye"></i> Ver dirección
+                            </button>
+                            <div class="collapse mt-2" id="direccion-{{ p.id }}">
+                                <div class="card card-body p-2" style="font-size:0.85em;">
+                                    {% if p.calle %}
+                                        <strong>Calle:</strong> {{ p.calle }}<br>
+                                        <strong>Número:</strong> {{ p.numero }}<br>
+                                        <strong>Colonia:</strong> {{ p.colonia }}<br>
+                                        <strong>Entre calles:</strong> {{ p.entre_calles }}<br>
+                                        <strong>Referencia:</strong> {{ p.referencia }}
+                                    {% else %}
+                                        {{ p.direccion }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ sucursales[p.sucursal_id] if p.sucursal_id in sucursales else 'N/A' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#productos-{{ p.id }}" aria-expanded="false">
+                                <i class="bi bi-cart"></i> Ver productos
+                            </button>
+                            <div class="collapse mt-2" id="productos-{{ p.id }}">
+                                <div class="card card-body p-2" style="font-size:0.85em;">
+                                    {% set productos_list = p.productos|fromjson %}
+                                    {% if productos_list %}
+                                        {% for producto in productos_list %}
+                                            <div class="mb-2">
+                                                <strong>{{ producto.nombre }}</strong>
+                                                <br><small class="text-muted">Cantidad: {{ producto.cantidad }}</small>
+                                                <br><small class="text-success">Precio: ${{ "%.2f"|format(producto.precio_total) }}</small>
+                                                {% if producto.opciones_personalizadas %}
+                                                    <br><small class="text-info">Opciones: {{ producto.opciones_personalizadas|join(", ") }}</small>
+                                                {% endif %}
+                                            </div>
+                                            {% if not loop.last %}<hr class="my-1">{% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <small class="text-muted">{{ p.productos }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong class="text-success">${{ "%.2f"|format(p.total) }}</strong>
+                        </td>
+                        <td>
+                            {% if p.forma_pago == 'efectivo' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-cash"></i> Efectivo
+                                </span>
+                                {% if p.cambio_para %}
+                                    <br><small class="text-muted">Cambio para: ${{ "%.2f"|format(p.cambio_para) }}</small>
+                                {% endif %}
+                            {% elif p.forma_pago == 'transferencia' %}
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-bank"></i> Transferencia
+                                </span>
+                                {% if p.comprobante_transferencia %}
+                                    <br><small class="text-success"><i class="bi bi-check-circle"></i> Comprobante confirmado</small>
+                                {% else %}
+                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> Pendiente comprobante</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">{{ p.forma_pago or 'No especificado' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ p.fecha.strftime('%d/%m/%Y') if p.fecha else '' }}<br>
+                            {{ p.fecha.strftime('%H:%M') if p.fecha else '' }}</small>
+                        </td>
+                        <td>
+                            <div class="estado-container">
+                                {% if p.estado == 'Pendiente' %}
+                                    <button class="btn btn-warning btn-sm estado-btn" onclick="cambiarEstado({{ p.id }}, 'En camino')">
+                                        <i class="bi bi-clock-fill"></i> Pendiente
+                                    </button>
+                                {% elif p.estado == 'En camino' %}
+                                    <button class="btn btn-info btn-sm estado-btn" onclick="cambiarEstado({{ p.id }}, 'Entregado')">
+                                        <i class="bi bi-truck"></i> En camino
+                                    </button>
+                                {% else %}
+                                    <span class="btn btn-success btn-sm disabled">
+                                        <i class="bi bi-check-circle-fill"></i> Entregado
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size:2em;"></i><br>
+                            No hay pedidos en línea registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección: listar_pedidos_clientes.html) #}
+
+<script>
+// Función para cambiar estado con un solo click y feedback visual
+function cambiarEstado(pedidoId, nuevoEstado) {
+    const confirmar = confirm(`¿Cambiar estado a "${nuevoEstado}"?`);
+    if (confirmar) {
+        // Mostrar loading en el botón
+        const botones = document.querySelectorAll(`[onclick*="${pedidoId}"]`);
+        botones.forEach(btn => {
+            btn.classList.add('loading');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Actualizando...';
+        });
+        
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `{{ url_for('admin.actualizar_estado_pedido', id=0) }}`.replace('0', pedidoId);
+        
+        var estadoInput = document.createElement('input');
+        estadoInput.type = 'hidden';
+        estadoInput.name = 'estado';
+        estadoInput.value = nuevoEstado;
+        form.appendChild(estadoInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Función para filtrar por estado (compatible con móvil y escritorio)
+function filtrarPorEstado(estado) {
+    var filas = document.querySelectorAll('.pedido-row');
+    var visibles = 0;
+    
+    // Agregar animación de filtrado
+    filas.forEach(function(fila) {
+        fila.style.transition = 'all 0.3s ease';
+        
+        if (estado === 'todos' || fila.getAttribute('data-estado') === estado) {
+            fila.style.display = '';
+            fila.style.opacity = '0';
+            fila.style.transform = 'translateY(20px)';
+            
+            // Animación escalonada
+            setTimeout(() => {
+                fila.style.opacity = '1';
+                fila.style.transform = 'translateY(0)';
+            }, visibles * 50);
+            
+            visibles++;
+        } else {
+            fila.style.opacity = '0';
+            fila.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                fila.style.display = 'none';
+            }, 300);
+        }
+    });
+    
+    // Actualizar botones activos en escritorio
+    document.querySelectorAll('.btn-outline-secondary, .btn-outline-warning, .btn-outline-info, .btn-outline-success').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    
+    if (estado === 'todos') {
+        document.querySelector('button[onclick="filtrarPorEstado(\'todos\')"]')?.classList.add('active');
+    } else {
+        document.querySelector(`button[onclick="filtrarPorEstado('${estado}')"]`)?.classList.add('active');
+    }
+    
+    // Cerrar dropdown en móvil
+    const dropdown = document.querySelector('#filtroMovil');
+    if (dropdown) {
+        const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+        if (bsDropdown) {
+            bsDropdown.hide();
+        }
+    }
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultados(visibles, estado);
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(visibles, estado) {
+    // Remover mensaje anterior si existe
+    const mensajeAnterior = document.querySelector('.no-results-message');
+    if (mensajeAnterior) {
+        mensajeAnterior.remove();
+    }
+    
+    if (visibles === 0 && estado !== 'todos') {
+        const container = document.querySelector('.mobile-orders-container') || document.querySelector('.table-responsive');
+        const mensaje = document.createElement('div');
+        mensaje.className = 'no-results-message text-center py-4';
+        mensaje.innerHTML = `
+            <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px;">
+                <i class="bi bi-search" style="font-size: 2em; color: var(--pozoleria-orange);"></i>
+                <h5 class="mt-3 mb-2">No se encontraron pedidos</h5>
+                <p class="mb-0 text-muted">No hay pedidos con estado "${estado}" en este momento.</p>
+            </div>
+        `;
+        container.appendChild(mensaje);
+        
+        // Animación de entrada
+        setTimeout(() => {
+            mensaje.style.opacity = '0';
+            mensaje.style.transform = 'translateY(20px)';
+            mensaje.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+                mensaje.style.opacity = '1';
+                mensaje.style.transform = 'translateY(0)';
+            }, 10);
+        }, 10);
+    }
+}
+
+// Contar pedidos por estado al cargar la página
+function actualizarContadores() {
+    var pendientes = document.querySelectorAll('[data-estado="Pendiente"]').length;
+    var enCamino = document.querySelectorAll('[data-estado="En camino"]').length;
+    var entregados = document.querySelectorAll('[data-estado="Entregado"]').length;
+    var todos = pendientes + enCamino + entregados;
+    
+    // Escritorio
+    const countTodos = document.getElementById('count-todos');
+    const countPendientes = document.getElementById('count-pendientes');
+    const countEnCamino = document.getElementById('count-en-camino');
+    const countEntregados = document.getElementById('count-entregados');
+    
+    if (countTodos) countTodos.textContent = todos;
+    if (countPendientes) countPendientes.textContent = pendientes;
+    if (countEnCamino) countEnCamino.textContent = enCamino;
+    if (countEntregados) countEntregados.textContent = entregados;
+    
+    // Móvil
+    const countTodosMobile = document.getElementById('count-todos-mobile');
+    const countPendientesMobile = document.getElementById('count-pendientes-mobile');
+    const countEnCaminoMobile = document.getElementById('count-en-camino-mobile');
+    const countEntregadosMobile = document.getElementById('count-entregados-mobile');
+    
+    if (countTodosMobile) countTodosMobile.textContent = todos;
+    if (countPendientesMobile) countPendientesMobile.textContent = pendientes;
+    if (countEnCaminoMobile) countEnCaminoMobile.textContent = enCamino;
+    if (countEntregadosMobile) countEntregadosMobile.textContent = entregados;
+}
+
+// Función para animar la entrada de las cards
+function animarEntradaCards() {
+    const cards = document.querySelectorAll('.order-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+// Función para mejorar la UX de los collapses
+function mejorarCollapses() {
+    const collapseElements = document.querySelectorAll('[data-bs-toggle="collapse"]');
+    collapseElements.forEach(element => {
+        element.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    if (this.getAttribute('aria-expanded') === 'true') {
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                }, 10);
+            }
+        });
+    });
+}
+
+// Inicialización cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar contadores
+    actualizarContadores();
+    
+    // Activar filtro "todos" por defecto
+    filtrarPorEstado('todos');
+    
+    // Animar entrada de cards
+    setTimeout(animarEntradaCards, 100);
+    
+    // Mejorar collapses
+    mejorarCollapses();
+    
+    // Agregar efecto de hover mejorado a las cards
+    const orderCards = document.querySelectorAll('.order-card');
+    orderCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.01)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Auto-refresh cada 30 segundos (opcional)
+    // setInterval(() => {
+    //     location.reload();
+    // }, 30000);
+});
+
+// Función para llamadas telefónicas con vibración
+function llamarTelefono(numero) {
+    if (navigator.vibrate) {
+        navigator.vibrate(100);
+    }
+    window.open(`tel:${numero}`, '_self');
+}
+
+// Mejorar accesibilidad con teclado
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Cerrar todos los collapses abiertos
+        const collapsesAbiertos = document.querySelectorAll('.collapse.show');
+        collapsesAbiertos.forEach(collapse => {
+            const bsCollapse = bootstrap.Collapse.getInstance(collapse);
+            if (bsCollapse) {
+                bsCollapse.hide();
+            }
+        });
+        
+        // Cerrar dropdown de filtros
+        const dropdown = document.querySelector('#filtroMovil');
+        if (dropdown) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+            if (bsDropdown) {
+                bsDropdown.hide();
+            }
+        }
+    }
+});
+</script>

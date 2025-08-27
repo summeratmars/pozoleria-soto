@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pozolería Soto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --pozoleria-orange: #e97c1a;
+        }
+        /* ===== MODAL PRODUCTO MÓVIL PROFESIONAL (refactor) ===== */
+        .modal-content-moderno {background:#fff;border:none;box-shadow:0 10px 40px rgba(0,0,0,.25);}        
+        .imagen-producto-container {background:linear-gradient(135deg,#f8f9fa,#ececec);display:flex;align-items:center;justify-content:center;min-height:260px;position:relative;padding:12px}
+        .imagen-producto-container .imagen-principal img{max-width:100%;max-height:230px;object-fit:cover;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+        .producto-header-scroll{margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #f1f3f5}
+        .producto-titulo-scroll{font-size:1.35rem;font-weight:700;color:var(--pozoleria-orange);margin:0 0 6px}
+        .precio-base-scroll{font-size:1.25rem;font-weight:700;color:#28a745;margin-bottom:6px}
+        .producto-descripcion-scroll{font-size:.8rem;line-height:1.35;color:#6c757d;margin:0 0 4px}
+        .opciones-scroll-container-completo{flex:1;overflow-y:auto;padding:14px 16px;scroll-behavior:smooth}
+        .opcion-grupo-moderno{background:#f8f9fa;border-radius:14px;padding:14px 16px;margin-bottom:16px;border-left:4px solid var(--pozoleria-orange);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+        .opcion-titulo-moderno{font-size:1rem;font-weight:700;margin:0 0 4px;color:#333;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+        .badge-obligatorio,.badge-opcional{font-size:.55rem;padding:4px 8px;border-radius:10px;font-weight:600;letter-spacing:.5px}
+        .badge-obligatorio{background:linear-gradient(135deg,#dc3545,#c82333);color:#fff}
+        .badge-opcional{background:linear-gradient(135deg,#6c757d,#5a6268);color:#fff}
+        .opcion-descripcion{font-size:.65rem;color:#777;margin:2px 0 0}
+        .opciones-container{display:grid;gap:10px}
+        .opcion-item-moderno{background:#fff;border:2px solid #e9ecef;border-radius:10px;padding:10px 12px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+        .opcion-item-moderno::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(233,124,26,.12),transparent);transition:left .55s ease}
+        .opcion-item-moderno:hover::before{left:100%}
+        .opcion-item-moderno:hover{border-color:var(--pozoleria-orange);transform:translateY(-2px);box-shadow:0 6px 16px rgba(233,124,26,.18)}
+        .opcion-item-moderno.selected{background:linear-gradient(135deg,#28a745,#20c997);border-color:#28a745;color:#fff;box-shadow:0 6px 18px rgba(40,167,69,.35)}
+        .opcion-radio-container{display:flex;align-items:center;gap:10px}
+        .radio-button{width:18px;height:18px;border-radius:50%;border:2px solid #d0d5d9;position:relative;flex-shrink:0;transition:.3s}
+        .opcion-item-moderno.selected .radio-button{border-color:#fff;background:#fff}
+        .opcion-item-moderno.selected .radio-button::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:#28a745}
+        .opcion-content{display:flex;justify-content:space-between;align-items:center;flex:1;gap:10px}
+        .opcion-nombre{font-size:.85rem;font-weight:600;line-height:1.1}
+        .opcion-precio-moderno{font-size:.8rem;font-weight:700;color:#28a745}
+        .opcion-item-moderno.selected .opcion-precio-moderno{color:#fff}
+        .controles-inferiores{background:#fff;border-top:2px solid #f1f3f5;padding:14px 16px;position:sticky;bottom:0;box-shadow:0 -4px 18px rgba(0,0,0,.08);z-index:20}
+        .cantidad-y-precio{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .cantidad-controls-moderno{display:flex;align-items:center;gap:12px}
+        .btn-cantidad-moderno{width:40px;height:40px;border-radius:50%;border:2px solid var(--pozoleria-orange);background:#fff;color:var(--pozoleria-orange);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;transition:.3s}
+        .btn-cantidad-moderno:hover{background:var(--pozoleria-orange);color:#fff;transform:scale(1.05)}
+        .cantidad-display-moderno{font-size:1.4rem;font-weight:700;color:#333;min-width:42px;text-align:center}
+        .precio-final{font-size:1.55rem;font-weight:700;color:#28a745;text-shadow:0 2px 4px rgba(40,167,69,.2);line-height:1}
+        .btn-agregar-moderno{width:100%;background:linear-gradient(135deg,#28a745,#20c997);border:none;color:#fff;padding:14px 18px;border-radius:12px;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;cursor:pointer;transition:.35s;position:relative;overflow:hidden}
+        .btn-agregar-moderno::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transition:left .65s ease}
+        .btn-agregar-moderno:hover::before{left:100%}
+        .btn-agregar-moderno:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(32,201,151,.4)}
+        .btn-agregar-moderno:active{transform:translateY(1px);box-shadow:0 4px 12px rgba(32,201,151,.3)}
+        @media (max-width:420px){
+            .opcion-grupo-moderno{padding:12px 12px}
+            .opcion-nombre{font-size:.8rem}
+            .opcion-precio-moderno{font-size:.75rem}
+            .producto-titulo-scroll{font-size:1.25rem}
+            .precio-base-scroll{font-size:1.15rem}
+            .precio-final{font-size:1.45rem}
+            .btn-cantidad-moderno{width:38px;height:38px}
+            .cantidad-display-moderno{font-size:1.25rem}
+        }
+        /* ===== FIN MODAL PRODUCTO MÓVIL PROFESIONAL ===== */
+        
+        /* ESTILOS BASE MÓVIL */
+        body {
+            background-color: #fff8f0;
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+        
+        /* NAVBAR MÓVIL */
+        .navbar {
+            background: linear-gradient(135deg, var(--pozoleria-orange) 0%, #d86b1a 100%) !important;
+            padding: 8px 0;
+            min-height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 1051;
+            box-shadow: 0 2px 10px rgba(233, 124, 26, 0.3);
+        }
+        
+        .container-fluid {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+        
+        .navbar-brand-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-image {
+            height: 42px;
+            width: auto;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .logo-image:hover {
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        /* BOTONES NAVBAR MÓVIL */
+        .cart-button, .ordena-ahora-button, .consulta-button {
+            padding: 8px 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: 16px;
+            min-width: 75px;
+            margin: 1px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-button:hover, .ordena-ahora-button:hover, .consulta-button:hover {
+            background: rgba(255,255,255,0.2);
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .ordena-icon, .cart-icon, .consulta-icon {
+            font-size: 0.8rem;
+            margin-right: 3px;
+        }
+        
+        .ordena-text, .consulta-text, .cart-text {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+        
+        /* CONTADOR CARRITO MÓVIL */
+        .cart-badge {
+            background: #ff4757 !important;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            top: -4px;
+            right: -6px;
+            border: 1px solid white;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-total {
+            display: inline-block !important;
+            font-size: 0.6rem;
+            font-weight: 700;
+            margin-left: 3px;
+            color: inherit;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .d-flex.align-items-center {
+            gap: 3px !important;
+        }
+        
+        /* MODAL MÓVIL */
+        .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+            height: 100vh;
+        }
+        
+        .modal-content {
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+        }
+        
+        .modal-body {
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        /* CONTENIDO DEL MODAL MÓVIL */
+        .producto-mobile-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .imagen-producto-mobile {
+            flex: 0 0 40vh;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .btn-close-mobile {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .contenido-producto-mobile {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+        }
+        
+        .producto-titulo-mobile {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--pozoleria-orange);
+            margin-bottom: 10px;
+        }
+        
+        .producto-precio-mobile {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .producto-descripcion-mobile {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        /* OPCIONES MÓVIL */
+        .opcion-grupo-mobile {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .opcion-titulo-mobile {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .badge-obligatorio {
+            background: #dc3545;
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+        
+        .badge-opcional {
+            background: #6c757d;
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+        
+        .opcion-item-mobile {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .opcion-item-mobile:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .opcion-item-mobile.selected {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .opcion-radio-mobile {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .opcion-contenido-mobile {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .opcion-texto-mobile {
+            font-weight: 600;
+        }
+        
+        .opcion-precio-mobile {
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .opcion-item-mobile.selected .opcion-precio-mobile {
+            color: #fff;
+        }
+        
+        /* CONTROLES INFERIORES MÓVIL */
+        .controles-mobile {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cantidad-controls-mobile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .btn-cantidad-mobile {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--pozoleria-orange);
+            background: white;
+            color: var(--pozoleria-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cantidad-mobile:hover {
+            background: var(--pozoleria-orange);
+            color: white;
+        }
+        
+        .cantidad-display-mobile {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .precio-total-mobile {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .precio-final-mobile {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .btn-agregar-mobile {
+            width: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-agregar-mobile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        /* CARDS PRODUCTOS MÓVIL */
+        .card {
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .card-img-top {
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .card-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .btn-agregar-menu {
+            width: 100%;
+            background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-agregar-menu:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(233, 124, 26, 0.4);
+        }
+        
+        /* CATEGORÍAS MÓVIL */
+        .categories-container {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+        
+        .category-btn {
+            min-width: 60px;
+            padding: 8px 12px;
+            margin: 2px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 20px;
+            border: 2px solid var(--pozoleria-orange);
+            background: white;
+            color: var(--pozoleria-orange);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .category-btn.active {
+            background: var(--pozoleria-orange);
+            color: white;
+        }
+        
+        .category-icon {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .category-name {
+            display: none;
+        }
+        
+        .category-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.6rem;
+            background: #ff4757;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 5px;
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* HEADER PÁGINA MÓVIL */
+        .catalog-header {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        
+        .display-4 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--pozoleria-orange);
+            margin-bottom: 10px;
+        }
+        
+        .lead {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        /* TOAST MÓVIL */
+        .toast-carrito {
+            max-width: 350px;
+            margin: 10px;
+        }
+        
+        /* UTILIDADES MÓVIL */
+        .container {
+            padding: 0 10px;
+        }
+        
+        .py-4 {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        
+        .mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        /* WHATSAPP BUTTON MÓVIL */
+        .whatsapp-float {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            bottom: 15px;
+            right: 15px;
+            background-color: #25d366;
+            color: #fff;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 2px 2px 3px #999;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .whatsapp-float:hover {
+            background-color: #128c7e;
+            color: #fff;
+            transform: scale(1.1);
+            text-decoration: none;
+        }
+        
+        /* ANIMACIONES */
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal.show .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .opcion-item-mobile {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Móvil -->
+    <nav class="navbar">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('index') }}" class="navbar-brand-container" style="text-decoration: none;">
+                <img src="{{ url_for('static', filename='logo_soto.png') }}" 
+                     alt="Logo Pozolería Soto" 
+                     class="logo-image">
+            </a>
+            
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-light" id="btnCambiarSucursal" style="padding:8px 10px;font-size:0.55rem;font-weight:700;border-radius:16px;margin:1px;letter-spacing:.2px;text-transform:uppercase;display:flex;align-items:center;gap:4px;">
+                    <i class="fas fa-store"></i>
+                    <span id="sucursalActualLabel">Sucursal</span>
+                </button>
+                <a href="{{ url_for('catalogo') }}" class="btn ordena-ahora-button">
+                    <i class="fas fa-utensils ordena-icon"></i>
+                    <span class="ordena-text">Ordena</span>
+                </a>
+                <a href="{{ url_for('consultar_pedido') }}" class="btn consulta-button">
+                    <i class="fas fa-search consulta-icon"></i>
+                    <span class="consulta-text">Mi Pedido</span>
+                </a>
+                <a href="{{ url_for('carrito') }}" class="btn cart-button position-relative">
+                    <i class="bi bi-cart3 cart-icon"></i>
+                    <span class="cart-text">Carrito</span>
+                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">0</span>
+                    <span id="cart-total" class="cart-total">$0.00</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- JavaScript Móvil -->
+    <script>
+        // Funciones helper para carrito por sucursal (MÓVIL)
+        function getSucursalId() {
+            // Debe coincidir con el fallback usado al guardar en catálogo móvil
+            return localStorage.getItem('sucursal_id') || '1';
+        }
+        
+        function getCarritoSucursal() {
+            var sucursalId = getSucursalId();
+            var carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal') || '{}');
+            return carritos[sucursalId] || [];
+        }
+        
+        // Actualizar carrito header SOLO para móvil (localStorage)
+        function actualizarCarritoHeader() {
+            var carrito = getCarritoSucursal();
+            var total = 0;
+            var cantidad = 0;
+            
+            carrito.forEach(function(item) {
+                cantidad += item.cantidad || 1;
+                
+                // Calcular precio con opciones personalizadas
+                var precioConOpciones = item.precio || 0;
+                if (item.opciones_personalizadas && Array.isArray(item.opciones_personalizadas)) {
+                    item.opciones_personalizadas.forEach(function(opcion) {
+                        if (opcion.precio) {
+                            precioConOpciones += parseFloat(opcion.precio);
+                        }
+                    });
+                }
+                
+                total += precioConOpciones * (item.cantidad || 1);
+            });
+            
+            var cartCount = document.getElementById('cart-count');
+            var cartTotal = document.getElementById('cart-total');
+            
+            if (cartCount) {
+                cartCount.textContent = cantidad;
+                // Mostrar siempre el badge para feedback inmediato
+                cartCount.style.display = 'flex';
+            }
+            
+            if (cartTotal) {
+                cartTotal.textContent = '$' + total.toFixed(2);
+            }
+            
+            console.log('📱 Carrito móvil actualizado - Cantidad:', cantidad, 'Total: $' + total.toFixed(2));
+        }
+        
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', actualizarCarritoHeader);
+    document.addEventListener('DOMContentLoaded', inicializarCambioSucursal);
+        
+        // Hacer función global
+        window.actualizarCarritoHeader = actualizarCarritoHeader;
+
+        // Escuchar cambios de storage (otra pestaña / misma app)
+        window.addEventListener('storage', function(e){
+            if (e.key === 'carritos_por_sucursal') {
+                actualizarCarritoHeader();
+            }
+        });
+
+                // ===== Cambio de Sucursal Móvil =====
+                function inicializarCambioSucursal(){
+                        try {
+                                const btn = document.getElementById('btnCambiarSucursal');
+                                if(!btn) return;
+                                actualizarEtiquetaSucursal();
+                                btn.addEventListener('click', abrirModalSucursal);
+                        } catch(err){ console.warn('Init cambio sucursal error', err); }
+                }
+
+                function actualizarEtiquetaSucursal(){
+                        const label = document.getElementById('sucursalActualLabel');
+                        if(!label) return;
+                        const id = localStorage.getItem('sucursal_id') || '1';
+                        // Nombres cacheados en localStorage (clave: sucursales_cache -> [{id,nombre}])
+                        let nombre = 'Sucursal '+id;
+                        try {
+                                const cache = JSON.parse(localStorage.getItem('sucursales_cache')||'[]');
+                                const found = cache.find(s=> String(s.id)===String(id));
+                                if(found) nombre = found.nombre.split(' ')[0];
+                        } catch{}
+                        label.textContent = nombre;
+                }
+
+                function abrirModalSucursal(){
+                        // Crear modal dinámico solo una vez
+                        let existing = document.getElementById('modalCambiarSucursal');
+                        if(!existing){
+                                const modalHtml = `
+                                <div class="modal fade" id="modalCambiarSucursal" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title"><i class='fas fa-store me-2'></i>Cambiar Sucursal</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body" id="listaSucursalesModal">
+                                                <p class="text-muted small mb-2">Selecciona la sucursal desde la que deseas ordenar.</p>
+                                                <div class="sucursales-loading text-center py-3">
+                                                    <div class="spinner-border text-warning" role="status"><span class="visually-hidden">Cargando...</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer d-flex justify-content-between">
+                                                <small class="text-muted">La sucursal afecta disponibilidad y carrito.</small>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                        }
+                        const modalEl = document.getElementById('modalCambiarSucursal');
+                        const bsModal = new bootstrap.Modal(modalEl);
+                        bsModal.show();
+                        cargarSucursalesEnModal();
+                }
+
+                function cargarSucursalesEnModal(){
+                    const cont = document.getElementById('listaSucursalesModal');
+                    if(!cont) return;
+                    fetch('/api/sucursales')
+                        .then(r=>r.json())
+                        .then(data=>{
+                            let lista = data.sucursales || [];
+                            localStorage.setItem('sucursales_cache', JSON.stringify(lista));
+                            const actual = localStorage.getItem('sucursal_id')||'1';
+                            const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal')||'{}');
+                            if(!lista.length){ lista = [{id:1,nombre:'Sucursal 1',abierta_ahora:true}]; }
+                                const html = lista.map(s=>{
+                                    const carrito = carritos[s.id] || [];
+                                    let totalCant = 0; let totalMonto = 0;
+                                    carrito.forEach(it=> {
+                                        const cant = it.cantidad||1;
+                                        totalCant += cant;
+                                        let precioBase = 0;
+                                        if (typeof it.precio === 'number') precioBase = it.precio; else if (typeof it.precio_base === 'number') precioBase = it.precio_base; else if (typeof it.precio_unitario === 'number') precioBase = it.precio_unitario; 
+                                        let extras = 0;
+                                        if (Array.isArray(it.opciones_personalizadas)) {
+                                            it.opciones_personalizadas.forEach(op=>{
+                                                const p = parseFloat(op.precio || op.precio_adicional || 0) || 0;
+                                                extras += p;
+                                            });
+                                        }
+                                        totalMonto += (precioBase + extras) * cant;
+                                    });
+                                    const countBadge = totalCant>0 ? `<span class='badge bg-primary ms-1' title='Productos en carrito'>${totalCant}</span>` : '';
+                                    const montoBadge = totalMonto>0 ? `<span class='badge bg-warning text-dark ms-1' title='Total estimado carrito'>$${totalMonto.toFixed(2)}</span>` : '';
+                                    return `<button class="list-group-item list-group-item-action flex-column align-items-start ${String(s.id)===String(actual)?'active':''}" onclick="seleccionarSucursal('${s.id}')">
+                                                <div class='w-100 d-flex justify-content-between'>
+                                                  <span class='d-flex align-items-center'>${s.nombre}${countBadge}${montoBadge}</span>
+                                                  <span class='badge ${s.abierta_ahora?'bg-success':'bg-danger'}'>${s.abierta_ahora?'Abierto':'Cerrado'}</span>
+                                                </div>
+                                              </button>`;
+                                }).join('');
+                            cont.innerHTML = '<div class="list-group">'+html+'</div>';
+                        })
+                        .catch(()=>{
+                            const actual = localStorage.getItem('sucursal_id')||'1';
+                            cont.innerHTML = `<div class='alert alert-warning'>No se pudo cargar la lista. Fallback.<div class='mt-2'><button class='btn btn-sm btn-outline-primary ${actual==='1'?'active':''}' onclick="seleccionarSucursal('1')">Sucursal 1</button></div></div>`;
+                        });
+                }
+
+                window.seleccionarSucursal = function(id){
+                    const anterior = localStorage.getItem('sucursal_id')||'1';
+                    if (anterior === id){
+                        const modalEl = document.getElementById('modalCambiarSucursal');
+                        if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+                        return;
+                    }
+                    // Si el carrito actual (de la sucursal anterior) tiene productos, pedir confirmación
+                    const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal')||'{}');
+                    const carritoAnterior = carritos[anterior] || [];
+                    if (carritoAnterior.length > 0){
+                        if(!confirm('Cambiar de sucursal vaciará tu carrito actual de '+carritoAnterior.length+' producto(s). ¿Continuar?')){
+                            return;
+                        }
+                    }
+                    // Guardar selección
+                    localStorage.setItem('sucursal_id', id);
+                    actualizarEtiquetaSucursal();
+                    actualizarCarritoHeader();
+                    const modalEl = document.getElementById('modalCambiarSucursal');
+                    if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+                    // Redirigir para actualización de catálogo
+                    window.location.href = '/catalogo';
+                }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/525575251742?text=¡Hola!%20Me%20interesa%20hacer%20un%20pedido%20de%20pozole" 
+       target="_blank" 
+       class="whatsapp-float"
+       title="¡Contáctanos por WhatsApp!">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+        <style>
+            .notif-banner{position:fixed;bottom:12px;left:10px;right:10px;z-index:2000;background:#1f1f1f;color:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:10px;font-size:.8rem;animation:slideInNotif .4s ease}
+            @keyframes slideInNotif{from{transform:translateY(35px);opacity:0}to{transform:translateY(0);opacity:1}}
+            .notif-banner h6{margin:0;font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px}
+            .notif-banner-buttons{display:flex;gap:6px}
+            .notif-btn{flex:1 1 50%;border:none;border-radius:10px;padding:9px 10px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:.7rem;transition:.25s}
+            .notif-btn-allow{background:linear-gradient(135deg,#28a745,#20c997);color:#fff}
+            .notif-btn-allow:hover{filter:brightness(1.1)}
+            .notif-btn-later{background:#444;color:#eee}
+            .notif-btn-later:hover{background:#555}
+            .notif-close{position:absolute;top:4px;right:8px;background:transparent;color:#bbb;border:none;font-size:1rem;cursor:pointer}
+            .notif-close:hover{color:#fff}
+        </style>
+        <script>
+            (function(){
+                const KEY_FLAG='notif_perm_requested_v1';
+                if(!('Notification' in window)) return;
+                const perm = Notification.permission;
+                if(perm==='granted'){localStorage.setItem(KEY_FLAG,'1');return;}
+                if(localStorage.getItem(KEY_FLAG)==='1') return;
+                if(perm==='denied'){localStorage.setItem(KEY_FLAG,'1');return;}
+                document.addEventListener('DOMContentLoaded',()=>{
+                    const banner=document.createElement('div');
+                    banner.className='notif-banner';
+                    banner.innerHTML=`<button class='notif-close' aria-label='Cerrar'>&times;</button>
+                        <h6><i class='fas fa-bell'></i> Notificaciones</h6>
+                        <p style='margin:0;font-size:.65rem;line-height:1.25'>Activa avisos para saber cuando tu pedido cambie de estado.</p>
+                        <div class='notif-banner-buttons'>
+                            <button class='notif-btn notif-btn-allow'><i class='fas fa-check'></i>Permitir</button>
+                            <button class='notif-btn notif-btn-later'><i class='fas fa-clock'></i>Luego</button>
+                        </div>`;
+                    document.body.appendChild(banner);
+                    const btnAllow=banner.querySelector('.notif-btn-allow');
+                    const btnLater=banner.querySelector('.notif-btn-later');
+                    const btnClose=banner.querySelector('.notif-close');
+                    function cerrar(save){ if(save) localStorage.setItem(KEY_FLAG,'1'); banner.style.opacity='0'; setTimeout(()=>banner.remove(),230); }
+                    btnAllow.addEventListener('click',()=>{try{Notification.requestPermission().then(()=>cerrar(true));}catch(e){cerrar(true);} });
+                    btnLater.addEventListener('click',()=>cerrar(false));
+                    btnClose.addEventListener('click',()=>cerrar(true));
+                });
+            })();
+        </script>
+</body>
+</html>

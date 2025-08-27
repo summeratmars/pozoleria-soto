@@ -1,0 +1,148 @@
+{# Parcial: nueva_categoria (sin extends) #}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-plus-circle me-2" style="color: var(--pozoleria-orange);"></i>
+                Nueva Categoría
+            </h1>
+            <p class="text-muted mb-0">Crea una nueva categoría para organizar tus productos</p>
+        </div>
+        <div class="col-auto">
+            {% if session.admin_nombre %}
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary px-3 py-2 me-3" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle me-1"></i>
+                    {{ session.admin_nombre }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header py-3 d-flex align-items-center">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-tag me-2"></i>Información de la Categoría
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if mensaje %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ mensaje }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="nombre" class="form-label fw-bold">
+                                        <i class="fas fa-tag me-1" style="color: var(--pozoleria-orange);"></i>
+                                        Nombre de la Categoría *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="nombre" 
+                                           name="nombre" 
+                                           placeholder="Ej: Platillos principales, Bebidas, Postres..." 
+                                           required
+                                           maxlength="50">
+                                    <div class="invalid-feedback">
+                                        Por favor, ingresa un nombre para la categoría.
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        El nombre debe ser descriptivo y único (máximo 50 caracteres)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ejemplos de categorías -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-light border">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-lightbulb me-2 text-warning"></i>
+                                        Ejemplos de Categorías Comunes:
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled mb-0">
+                                                <li><span class="badge bg-info me-2">Platillos</span>Comida principal</li>
+                                                <li><span class="badge bg-success me-2">Bebidas</span>Refrescos, aguas, etc.</li>
+                                                <li><span class="badge bg-warning me-2">Postres</span>Dulces y helados</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled mb-0">
+                                                <li><span class="badge bg-danger me-2">Entradas</span>Aperitivos</li>
+                                                <li><span class="badge bg-primary me-2">Especiales</span>Del día o temporada</li>
+                                                <li><span class="badge bg-secondary me-2">Extras</span>Complementos</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="row mt-4">
+                            <div class="col-12 d-flex justify-content-between">
+                                <a href="{{ url_for('admin.listar_categorias') }}" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>Crear Categoría
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección categoria_form.html) #}
+
+<script>
+// Validación del formulario
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Contador de caracteres
+document.getElementById('nombre').addEventListener('input', function() {
+    const maxLength = 50;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    // Actualizar el texto de ayuda
+    const helpText = this.parentNode.querySelector('.form-text');
+    if (remaining <= 10) {
+        helpText.innerHTML = `<i class="fas fa-exclamation-triangle me-1 text-warning"></i>Quedan ${remaining} caracteres`;
+    } else {
+        helpText.innerHTML = `<i class="fas fa-info-circle me-1"></i>El nombre debe ser descriptivo y único (quedan ${remaining} caracteres)`;
+    }
+});
+</script>

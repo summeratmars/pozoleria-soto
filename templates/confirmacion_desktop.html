@@ -1,0 +1,564 @@
+{% extends "base_desktop.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Confirmación exitosa -->
+            <div class="confirmacion-desktop text-center">
+                <!-- Icono de éxito animado -->
+                <div class="success-animation mb-5">
+                    <div class="success-circle">
+                        <div class="check-mark">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="success-particles">
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                    </div>
+                </div>
+                
+                <!-- Mensaje principal con animación -->
+                <h1 class="display-4 text-success mb-3 fade-in-up">¡Pedido Confirmado!</h1>
+                <p class="lead text-muted mb-5 fade-in-up" style="animation-delay: 0.2s;">
+                    Tu pedido ha sido recibido y está siendo procesado
+                </p>
+                
+                <div class="row">
+                    <!-- Columna izquierda - Información del pedido -->
+                    <div class="col-md-6">
+                        <!-- Número de pedido -->
+                        {% if numero_pedido %}
+                        <div class="card numero-pedido-card mb-4 fade-in-up" style="animation-delay: 0.4s;">
+                            <div class="card-body text-center">
+                                <div class="pedido-icon mb-3">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <h5 class="card-title text-primary">Tu número de pedido es:</h5>
+                                <div class="numero-display text-primary">{{ numero_pedido }}</div>
+                                <p class="card-text small text-muted mt-3">
+                                    Guarda este número para consultar el estado de tu pedido
+                                </p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="copyPedidoNumber()">
+                                    <i class="fas fa-copy me-1"></i>Copiar Número
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Tiempo estimado -->
+                        <div class="card tiempo-card mb-4 fade-in-up" style="animation-delay: 0.6s;">
+                            <div class="card-body text-center">
+                                <div class="tiempo-icon mb-3">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h6 class="card-title">Tiempo estimado de entrega</h6>
+                                <div class="tiempo-display">45-60 minutos</div>
+                                <p class="card-text small text-muted">
+                                    Te notificaremos cuando tu pedido esté en camino
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Contacto -->
+                        <div class="card contacto-card fade-in-up" style="animation-delay: 0.8s;">
+                            <div class="card-body text-center">
+                                <div class="contacto-icon mb-3">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <h6 class="card-title">¿Necesitas ayuda?</h6>
+                                <p class="card-text small mb-3">
+                                    Si tienes alguna pregunta sobre tu pedido, no dudes en contactarnos
+                                </p>
+                                <div class="contact-buttons">
+                                    <a href="https://wa.me/525575251742?text=Hola, tengo una pregunta sobre mi pedido {{ numero_pedido or '' }}" 
+                                       target="_blank" 
+                                       class="btn btn-success me-2">
+                                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                    </a>
+                                    <a href="tel:5575251742" class="btn btn-outline-primary">
+                                        <i class="fas fa-phone me-1"></i>Llamar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Columna derecha - Proceso del pedido -->
+                    <div class="col-md-6">
+                        <div class="card proceso-card h-100 fade-in-up" style="animation-delay: 1s;">
+                            <div class="card-header bg-gradient-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-route me-2"></i>Estado de tu Pedido
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="proceso-timeline">
+                                    <div class="timeline-item active">
+                                        <div class="timeline-marker">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Pedido Recibido</h6>
+                                            <small class="text-muted">Tu pedido ha sido confirmado</small>
+                                            <div class="timeline-time">Ahora</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item pending">
+                                        <div class="timeline-marker">
+                                            <i class="fas fa-utensils"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>En Preparación</h6>
+                                            <small class="text-muted">Comenzamos a preparar tu pozole</small>
+                                            <div class="timeline-time">En 5 minutos</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item pending">
+                                        <div class="timeline-marker">
+                                            <i class="fas fa-motorcycle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>En Camino</h6>
+                                            <small class="text-muted">Tu pedido sale hacia tu dirección</small>
+                                            <div class="timeline-time">En 30 minutos</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="timeline-item pending">
+                                        <div class="timeline-marker">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Entregado</h6>
+                                            <small class="text-muted">¡Disfruta tu pozole!</small>
+                                            <div class="timeline-time">En 45-60 minutos</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="acciones-desktop mt-5 fade-in-up" style="animation-delay: 1.2s;">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('consultar_pedido') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-search me-2"></i>Consultar Estado del Pedido
+                        </a>
+                        
+                        <a href="{{ url_for('catalogo') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-utensils me-2"></i>Hacer Otro Pedido
+                        </a>
+                        
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-home me-2"></i>Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animaciones y estilos específicos para confirmación desktop */
+.fade-in-up {
+    animation: fadeInUp 0.8s ease forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.success-circle {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: successPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(40, 167, 69, 0.3);
+}
+
+.check-mark i {
+    font-size: 3.5rem;
+    color: white;
+    animation: checkDraw 1s ease-in-out;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes checkDraw {
+    0% { transform: scale(0) rotate(45deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.success-particles {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #28a745;
+    border-radius: 50%;
+    animation: particleFloat 3s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { animation-delay: 0.5s; top: -60px; left: -20px; }
+.particle:nth-child(2) { animation-delay: 1s; top: -40px; left: 30px; }
+.particle:nth-child(3) { animation-delay: 1.5s; top: 10px; left: -50px; }
+.particle:nth-child(4) { animation-delay: 2s; top: 30px; left: 40px; }
+.particle:nth-child(5) { animation-delay: 2.5s; top: -10px; left: -30px; }
+.particle:nth-child(6) { animation-delay: 3s; top: 50px; left: 10px; }
+
+@keyframes particleFloat {
+    0%, 100% { opacity: 0; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-20px); }
+}
+
+.numero-pedido-card, .tiempo-card, .contacto-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.numero-pedido-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+}
+
+.numero-pedido-card:hover, .tiempo-card:hover, .contacto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.pedido-icon, .tiempo-icon, .contacto-icon {
+    font-size: 2.5rem;
+    color: var(--pozoleria-orange);
+}
+
+.numero-display {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 2.5rem;
+    letter-spacing: 4px;
+    color: #007bff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.tiempo-display {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--pozoleria-orange);
+}
+
+.proceso-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.proceso-timeline {
+    padding: 20px 0;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% + 5px);
+    background: #e9ecef;
+}
+
+.timeline-item.active::after {
+    background: #28a745;
+}
+
+.timeline-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-item.active .timeline-marker {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+}
+
+.timeline-item.pending .timeline-marker {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.timeline-content h6 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.timeline-time {
+    font-size: 0.8rem;
+    color: #007bff;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.contact-buttons .btn {
+    border-radius: 25px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.acciones-desktop .btn {
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.acciones-desktop .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+</style>
+
+<script>
+function copyPedidoNumber() {
+    const numeroText = '{{ numero_pedido }}';
+    navigator.clipboard.writeText(numeroText).then(function() {
+        // Mostrar toast de éxito
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0';
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check me-2"></i>Número de pedido copiado al portapapeles
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        // Crear contenedor de toasts si no existe
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remover el toast del DOM después de que se oculte
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    });
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ==== Notificaciones de estado del pedido (desktop) ====
+(function(){
+    const numero = '{{ numero_pedido or '' }}';
+    if(!numero) return;
+    const ESTADOS_NOTIFICAR = ['En preparación','En camino','Entregado','Cancelado'];
+    let ultimoEstado = 'Pendiente';
+    let polling = true;
+    const intervaloMs = 15000; // 15 segundos fallback
+    let usandoSSE = false;
+    try { localStorage.setItem('ultimo_pedido_activo', numero); } catch(_){ }
+
+    function solicitarPermiso(){
+        if(!('Notification' in window)) return;
+        if(Notification.permission === 'default'){
+            Notification.requestPermission();
+        }
+    }
+    solicitarPermiso();
+
+    function mostrarNotificacion(titulo, cuerpo){
+        try {
+            if(('Notification' in window) && Notification.permission === 'granted'){
+                new Notification(titulo, { body: cuerpo, icon: '/static/logo_soto.png' });
+            }
+        } catch(e){ console.warn('Notif error', e); }
+        // Fallback visual (toast)
+        try {
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-primary border-0';
+            toast.setAttribute('role','alert');
+            toast.style.minWidth = '260px';
+            toast.innerHTML = `<div class=\"d-flex\"><div class=\"toast-body\">${titulo}: ${cuerpo}</div><button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\"></button></div>`;
+            let cont = document.querySelector('.toast-container');
+            if(!cont){
+                cont = document.createElement('div');
+                cont.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(cont);
+            }
+            cont.appendChild(toast);
+            new bootstrap.Toast(toast,{delay:5000}).show();
+            toast.addEventListener('hidden.bs.toast', ()=> toast.remove());
+        } catch(_){}
+    }
+
+    async function checar(){
+        if(!polling) return;
+        try {
+            const res = await fetch(`/api/pedido_estado?numero=${encodeURIComponent(numero)}`);
+            if(!res.ok) throw new Error('HTTP '+res.status);
+            const data = await res.json();
+            if(data.ok){
+                const estado = data.estado;
+                if(estado !== ultimoEstado){
+                    actualizarTimeline(estado);
+                    if(ESTADOS_NOTIFICAR.includes(estado)){
+                        mostrarNotificacion('Pedido '+numero, `Estado: ${estado}`);
+                    }
+                    ultimoEstado = estado;
+                    if(estado === 'Entregado'){ polling = false; }
+                }
+            }
+        } catch(e){ console.warn('Error polling estado', e); }
+        if(polling){ setTimeout(checar, intervaloMs); }
+    }
+
+    function actualizarTimeline(estado){
+        try {
+            const items = document.querySelectorAll('.proceso-timeline .timeline-item');
+            let indice = 0;
+            if(estado === 'Pendiente') indice = 0;
+            else if(estado === 'En preparación') indice = 1;
+            else if(estado === 'En camino') indice = 2;
+            else if(estado === 'Entregado') indice = 3;
+            // Cancelado: marcar solo el primero y quitar active de los demás
+            if(estado === 'Cancelado') {
+                items.forEach((el,i)=> el.classList.toggle('active', i===0));
+                mostrarNotificacion('Pedido '+numero, 'Estado: Cancelado');
+                return;
+            }
+            items.forEach((el,i)=>{
+                el.classList.toggle('active', i <= indice);
+            });
+        } catch(e){ console.warn('Timeline error', e); }
+    }
+
+    function iniciarSSE(){
+        try {
+            const ev = new EventSource(`/sse/pedido/${encodeURIComponent(numero)}`);
+            usandoSSE = true;
+            ev.onmessage = (e)=>{
+                try {
+                    const d = JSON.parse(e.data);
+                    const estado = d.estado;
+                    if(!estado) return;
+                    if(estado !== ultimoEstado){
+                        console.debug('[SSE] Estado recibido:', estado);
+                        actualizarTimeline(estado);
+                        if(ESTADOS_NOTIFICAR.includes(estado)){
+                            mostrarNotificacion('Pedido '+numero, `Estado: ${estado}`);
+                        }
+                        ultimoEstado = estado;
+                        if(['Entregado','Cancelado'].includes(estado)){ ev.close(); polling=false; }
+                    }
+                } catch(err){ console.warn('SSE parse', err, e.data); }
+            };
+            ev.onerror = ()=>{
+                console.warn('SSE error, fallback a polling');
+                ev.close();
+                usandoSSE = false;
+                setTimeout(()=> checar(), 2000);
+            };
+        } catch(e){
+            console.warn('No se pudo iniciar SSE', e);
+            checar();
+        }
+    }
+
+    iniciarSSE();
+    if(!usandoSSE){ setTimeout(checar, intervaloMs); }
+})();
+
+// Limpieza de carrito localStorage (por si el usuario venía de flujo móvil / sincronizado)
+(function(){
+    try {
+        const sucursal = {{ sucursal_confirmada or 'null' }};
+        const key = 'carritos_por_sucursal';
+        const raw = localStorage.getItem(key);
+        if (raw){
+            let data = {};
+            try { data = JSON.parse(raw) || {}; } catch { data = {}; }
+            if (sucursal && data[String(sucursal)]) {
+                data[String(sucursal)] = [];
+                localStorage.setItem(key, JSON.stringify(data));
+                console.log('🧹 Carrito localStorage limpiado (desktop confirmación) sucursal', sucursal);
+            }
+        }
+        if (typeof actualizarCarritoHeader === 'function') { actualizarCarritoHeader(); }
+    } catch(err){ console.warn('No se pudo limpiar carrito localStorage en confirmación desktop', err); }
+})();
+</script>
+{% endblock %}

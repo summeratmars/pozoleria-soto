@@ -1,0 +1,562 @@
+{% extends "admin/base_admin_desktop.html" %}
+
+{% block title %}Gestión de Menú - Pozolería Soto{% endblock %}
+
+{% block content %}
+<div class="admin-desktop-container">
+    <!-- Header con estadísticas -->
+    <div class="admin-page-header-desktop">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="page-icon-desktop me-3">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div>
+                        <h2 class="page-title-desktop mb-1">Gestión de Menú</h2>
+                        <p class="page-subtitle-desktop mb-0">Administra productos, precios y disponibilidad</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-mini-desktop">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-success">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ productos_disponibles }} Disponibles</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-warning">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ productos_no_disponibles }} No Disponibles</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones principales -->
+    <div class="admin-actions-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0 me-3">Acciones Rápidas</h5>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Nuevo Producto
+                                </a>
+                                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-tags me-2"></i>Nueva Categoría
+                                </a>
+                                <button class="btn btn-outline-info" onclick="exportarMenu()">
+                                    <i class="fas fa-download me-2"></i>Exportar Menú
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="input-group">
+                            <input type="text" class="form-control" 
+                                   placeholder="Buscar producto..." 
+                                   id="busquedaGlobal">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros avanzados desktop -->
+    <div class="admin-filters-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" id="filtroCategoriaDesktop">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Disponibilidad</label>
+                        <select class="form-select" id="filtroDisponibilidadDesktop">
+                            <option value="">Todos</option>
+                            <option value="disponible">Disponibles</option>
+                            <option value="no_disponible">No disponibles</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Rango de Precio</label>
+                        <select class="form-select" id="filtroPrecio">
+                            <option value="">Todos los precios</option>
+                            <option value="0-50">$0 - $50</option>
+                            <option value="50-100">$50 - $100</option>
+                            <option value="100-200">$100 - $200</option>
+                            <option value="200+">$200+</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sucursales</label>
+                        <select class="form-select" id="filtroSucursales">
+                            <option value="">Todas</option>
+                            <option value="1">1 sucursal</option>
+                            <option value="2">2+ sucursales</option>
+                            <option value="3">3+ sucursales</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista de productos desktop -->
+    <div class="admin-products-desktop">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Productos del Menú ({{ menu_items|length }})
+                    </h5>
+                    <div class="view-controls">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary btn-sm active" 
+                                    onclick="cambiarVista('grid')" id="btnVistaGrid">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    onclick="cambiarVista('table')" id="btnVistaTabla">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Vista en Grid (por defecto) -->
+                <div id="vistaGrid" class="productos-grid-desktop p-4">
+                    <div class="row g-4">
+                        {% for item in menu_items %}
+                        <div class="col-lg-4 col-md-6 producto-item-desktop" 
+                             data-categoria="{{ item.categoria_id }}" 
+                             data-nombre="{{ item.nombre.lower() }}"
+                             data-precio="{{ item.precio }}"
+                             data-sucursales="{{ item.sucursales|length }}"
+                             data-disponible="{{ 'disponible' if item.disponible else 'no_disponible' }}">
+                            <div class="card producto-card-desktop h-100">
+                                <!-- Imagen del producto -->
+                                <div class="producto-imagen-container">
+                                    {% if item.imagen %}
+                                        {% if item.imagen.startswith('http') %}
+                                            <img src="{{ item.imagen }}" class="card-img-top" alt="{{ item.nombre }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            {% set filename = item.imagen.split('/static/uploads/')[-1].replace('uploads/','') %}
+                                            <img src="{{ url_for('static', filename='uploads/' + filename) }}" class="card-img-top" alt="{{ item.nombre }}" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                            <i class="fas fa-utensils fa-3x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Badge de disponibilidad -->
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge {% if item.disponible %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if item.disponible %}Disponible{% else %}No disponible{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <!-- Header del producto -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">{{ item.nombre }}</h5>
+                                        <span class="text-success fw-bold fs-5">${{ "%.2f"|format(item.precio) }}</span>
+                                    </div>
+
+                                    <!-- Categoría -->
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {{ item.categoria.nombre if item.categoria else 'Sin categoría' }}
+                                    </p>
+
+                                    <!-- Descripción -->
+                                    {% if item.descripcion %}
+                                    <p class="card-text small text-muted mb-3">
+                                        {{ item.descripcion[:100] }}{% if item.descripcion|length > 100 %}...{% endif %}
+                                    </p>
+                                    {% endif %}
+
+                                    <!-- Info adicional -->
+                                    <div class="producto-info-desktop mb-3">
+                                        <div class="row g-2 text-center">
+                                            <div class="col-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-store text-primary"></i>
+                                                    <small class="d-block">{{ item.sucursales|length }} Sucursales</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-cogs text-info"></i>
+                                                    <small class="d-block">{{ (item.opciones_personalizadas or item.opciones)|length }} Opciones</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Acciones del producto -->
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                        <a href="{{ url_for('admin.editar_menuitem', id=item.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verSucursalesDesktop({{ item.id }})"
+                                                    title="Ver sucursales">
+                                                <i class="fas fa-store"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning btn-sm" 
+                                                    onclick="duplicarProducto({{ item.id }})"
+                                                    title="Duplicar">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="eliminarProductoDesktop({{ item.id }}, '{{ item.nombre }}')"
+                                                    title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Vista en Tabla -->
+                <div id="vistaTabla" class="productos-tabla-desktop" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="tablaProductosDesktop">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="15%">Imagen</th>
+                                    <th width="20%">Producto</th>
+                                    <th width="15%">Categoría</th>
+                                    <th width="10%">Precio</th>
+                                    <th width="10%">Sucursales</th>
+                                    <th width="10%">Estado</th>
+                                    <th width="20%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in menu_items %}
+                                <tr class="producto-row-desktop" 
+                                    data-categoria="{{ item.categoria_id }}" 
+                                    data-nombre="{{ item.nombre.lower() }}"
+                                    data-precio="{{ item.precio }}"
+                                    data-sucursales="{{ item.sucursales|length }}"
+                                    data-disponible="{{ 'disponible' if item.disponible else 'no_disponible' }}">
+                                    <td>
+                                        {% if item.imagen %}
+                                            {% if item.imagen.startswith('http') %}
+                                                <img src="{{ item.imagen }}" alt="{{ item.nombre }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                            {% else %}
+                                                {% set filename = item.imagen.split('/static/uploads/')[-1].replace('uploads/','') %}
+                                                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="{{ item.nombre }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                            {% endif %}
+                                        {% else %}
+                                            <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-utensils text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-semibold">{{ item.nombre }}</div>
+                                            {% if item.descripcion %}
+                                            <small class="text-muted">{{ item.descripcion[:50] }}...</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ item.categoria.nombre if item.categoria else 'Sin categoría' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ "%.2f"|format(item.precio) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ item.sucursales|length }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if item.disponible %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if item.disponible %}Disponible{% else %}No disponible{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.editar_menuitem', id=item.id) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verSucursalesDesktop({{ item.id }})">
+                                                <i class="fas fa-store"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="eliminarProductoDesktop({{ item.id }}, '{{ item.nombre }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not menu_items %}
+    <div class="empty-state-desktop text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-utensils fa-5x text-muted mb-4"></i>
+                <h4 class="text-muted mb-2">No hay productos en el menú</h4>
+                <p class="text-muted">Comienza agregando productos para que tus clientes puedan ordenar</p>
+                <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Agregar Primer Producto
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de sucursales del producto -->
+<div class="modal fade" id="modalSucursalesDesktop" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-store me-2"></i>
+                    Disponibilidad en Sucursales
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoSucursalesDesktop">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+<script>
+// Inicializar DataTable para vista de tabla
+$(document).ready(function() {
+    $('#tablaProductosDesktop').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[ 1, "asc" ]], // Ordenar por nombre
+        "columnDefs": [
+            { "orderable": false, "targets": [0, 6] } // Imagen y acciones no ordenables
+        ]
+    });
+});
+
+// Cambiar entre vista grid y tabla
+function cambiarVista(vista) {
+    const vistaGrid = document.getElementById('vistaGrid');
+    const vistaTabla = document.getElementById('vistaTabla');
+    const btnGrid = document.getElementById('btnVistaGrid');
+    const btnTabla = document.getElementById('btnVistaTabla');
+    
+    if (vista === 'grid') {
+        vistaGrid.style.display = 'block';
+        vistaTabla.style.display = 'none';
+        btnGrid.classList.add('active');
+        btnTabla.classList.remove('active');
+    } else {
+        vistaGrid.style.display = 'none';
+        vistaTabla.style.display = 'block';
+        btnGrid.classList.remove('active');
+        btnTabla.classList.add('active');
+    }
+}
+
+// Filtros
+document.getElementById('filtroCategoriaDesktop').addEventListener('change', filtrarProductosDesktop);
+document.getElementById('filtroDisponibilidadDesktop').addEventListener('change', filtrarProductosDesktop);
+document.getElementById('filtroPrecio').addEventListener('change', filtrarProductosDesktop);
+document.getElementById('filtroSucursales').addEventListener('change', filtrarProductosDesktop);
+document.getElementById('busquedaGlobal').addEventListener('input', filtrarProductosDesktop);
+
+function filtrarProductosDesktop() {
+    const filtroCategoria = document.getElementById('filtroCategoriaDesktop').value;
+    const filtroDisponibilidad = document.getElementById('filtroDisponibilidadDesktop').value;
+    const filtroPrecio = document.getElementById('filtroPrecio').value;
+    const filtroSucursales = document.getElementById('filtroSucursales').value;
+    const busqueda = document.getElementById('busquedaGlobal').value.toLowerCase();
+    
+    const productosGrid = document.querySelectorAll('.producto-item-desktop');
+    const productosTabla = document.querySelectorAll('.producto-row-desktop');
+    
+    // Filtrar vista grid
+    productosGrid.forEach(producto => {
+        let mostrar = aplicarFiltros(producto, filtroCategoria, filtroDisponibilidad, filtroPrecio, filtroSucursales, busqueda);
+        producto.style.display = mostrar ? 'block' : 'none';
+    });
+    
+    // Filtrar vista tabla
+    productosTabla.forEach(producto => {
+        let mostrar = aplicarFiltros(producto, filtroCategoria, filtroDisponibilidad, filtroPrecio, filtroSucursales, busqueda);
+        producto.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function aplicarFiltros(elemento, categoria, disponibilidad, precio, sucursales, busqueda) {
+    const elCategoria = elemento.dataset.categoria;
+    const elDisponible = elemento.dataset.disponible;
+    const elPrecio = parseFloat(elemento.dataset.precio);
+    const elSucursales = parseInt(elemento.dataset.sucursales);
+    const elNombre = elemento.dataset.nombre;
+    
+    let mostrar = true;
+    
+    if (categoria && elCategoria !== categoria) {
+        mostrar = false;
+    }
+    
+    if (disponibilidad && elDisponible !== disponibilidad) {
+        mostrar = false;
+    }
+    
+    if (precio) {
+        if (precio === '0-50' && (elPrecio < 0 || elPrecio > 50)) mostrar = false;
+        if (precio === '50-100' && (elPrecio < 50 || elPrecio > 100)) mostrar = false;
+        if (precio === '100-200' && (elPrecio < 100 || elPrecio > 200)) mostrar = false;
+        if (precio === '200+' && elPrecio < 200) mostrar = false;
+    }
+    
+    if (sucursales) {
+        const minSucursales = parseInt(sucursales);
+        if (elSucursales < minSucursales) mostrar = false;
+    }
+    
+    if (busqueda && !elNombre.includes(busqueda)) {
+        mostrar = false;
+    }
+    
+    return mostrar;
+}
+
+function verSucursalesDesktop(productoId) {
+    fetch(`/admin/producto/${productoId}/sucursales`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoSucursalesDesktop').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalSucursalesDesktop')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar las sucursales', 'error');
+        });
+}
+
+function duplicarProducto(productoId) {
+    if (confirm('¿Deseas crear una copia de este producto?')) {
+        fetch(`/admin/producto/${productoId}/duplicar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Producto duplicado correctamente', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error al duplicar el producto', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al duplicar el producto', 'error');
+        });
+    }
+}
+
+function eliminarProductoDesktop(productoId, nombreProducto) {
+    if (confirm(`¿Estás seguro de que deseas eliminar "${nombreProducto}"?\n\nEsta acción no se puede deshacer.`)) {
+        fetch(`/admin/producto/${productoId}/eliminar`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Producto eliminado correctamente', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error al eliminar el producto', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al eliminar el producto', 'error');
+        });
+    }
+}
+
+function exportarMenu() {
+    window.location.href = '/admin/menu/exportar';
+}
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alert = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alert);
+    
+    setTimeout(() => {
+        const alertElement = document.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

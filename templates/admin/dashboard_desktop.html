@@ -1,0 +1,282 @@
+{% extends "admin/base_admin_desktop.html" %}
+{% block title %}Dashboard - Admin Desktop{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards Grid -->
+<div class="dashboard-grid">
+    <!-- Total Pedidos -->
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-number">{{ total_pedidos_hoy if total_pedidos_hoy is defined else '0' }}</div>
+        <div class="stat-label">Pedidos del Día</div>
+    </div>
+    
+    <!-- Ingresos Hoy -->
+    <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+        <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-number">${{ "%.0f"|format(ingresos_hoy if ingresos_hoy else 0) }}</div>
+        <div class="stat-label">Ingresos del Día</div>
+    </div>
+    
+    <!-- Pedidos Pendientes -->
+    <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #ffb300);">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-number">{{ pedidos_pendientes if pedidos_pendientes is defined else '0' }}</div>
+        <div class="stat-label">Pedidos Pendientes</div>
+    </div>
+    
+    <!-- En Camino -->
+    <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+        <div class="stat-icon">
+            <i class="fas fa-motorcycle"></i>
+        </div>
+        <div class="stat-number">{{ pedidos_en_camino if pedidos_en_camino is defined else '0' }}</div>
+        <div class="stat-label">Pedidos En Camino</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-primary btn-enhanced">
+        <i class="fas fa-plus me-2"></i>Nuevo Producto
+    </a>
+    <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-enhanced">
+        <i class="fas fa-tags me-2"></i>Nueva Categoría
+    </a>
+    <a href="{{ url_for('admin.nueva_sucursal') }}" class="btn btn-warning btn-enhanced">
+        <i class="fas fa-store me-2"></i>Nueva Sucursal
+    </a>
+    <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-info btn-enhanced">
+        <i class="fas fa-list me-2"></i>Gestionar Pedidos
+    </a>
+</div>
+
+<div class="row">
+    <!-- Pedidos Recientes -->
+    <div class="col-lg-8">
+        {% if pedidos_recientes %}
+        <div class="card-enhanced mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Pedidos Recientes
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-enhanced">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos_recientes %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-primary">{{ pedido.numero_pedido }}</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-semibold">{{ pedido.nombre }}</div>
+                                        <small class="text-muted">{{ pedido.telefono or '' }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ pedido.fecha.strftime('%H:%M') if pedido.fecha else '' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if pedido.estado == 'entregado' %}bg-success{% elif pedido.estado == 'en_camino' %}bg-warning{% elif pedido.estado == 'preparando' %}bg-info{% else %}bg-secondary{% endif %}">
+                                        {{ pedido.estado.replace('_', ' ').title() if pedido.estado else 'Pendiente' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">
+                                        ${{ "%.2f"|format(pedido.total) if pedido.total else '0.00' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.ver_pedido_cliente', id=pedido.id) if pedido.id else '#' }}" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           data-bs-toggle="tooltip" 
+                                           title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                data-bs-toggle="tooltip" 
+                                                title="Cambiar estado">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light text-center">
+                <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-primary btn-enhanced">
+                    <i class="fas fa-eye me-2"></i>Ver Todos los Pedidos
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Gráfico de Ventas (Placeholder) -->
+        <div class="card-enhanced">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Ventas del Día
+                </h5>
+            </div>
+            <div class="card-body text-center py-5">
+                <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Gráfico de Ventas</h5>
+                <p class="text-muted">Aquí se mostraría un gráfico detallado de las ventas del día</p>
+                <button class="btn btn-outline-primary btn-enhanced">
+                    <i class="fas fa-chart-bar me-2"></i>Generar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Info -->
+    <div class="col-lg-4">
+        <!-- Resumen del Sistema -->
+        <div class="card-enhanced mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Resumen del Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <div>
+                                <i class="fas fa-utensils fa-2x text-primary"></i>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="mb-0 text-primary">{{ total_productos if total_productos is defined else '0' }}</h4>
+                                <small class="text-muted">Productos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <div>
+                                <i class="fas fa-tags fa-2x text-success"></i>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="mb-0 text-success">{{ total_categorias if total_categorias is defined else '0' }}</h4>
+                                <small class="text-muted">Categorías</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <div>
+                                <i class="fas fa-store fa-2x text-info"></i>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="mb-0 text-info">{{ total_sucursales if total_sucursales is defined else '0' }}</h4>
+                                <small class="text-muted">Sucursales</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estado de Sucursales -->
+        {% if sucursales_stats %}
+        <div class="card-enhanced mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-store me-2"></i>Estado de Sucursales
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for sucursal in sucursales_stats %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ sucursal.nombre }}</h6>
+                        <small class="text-muted">{{ sucursal.direccion or 'Sin dirección' }}</small>
+                    </div>
+                    <div>
+                        <span class="badge {% if sucursal.activa %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+                            {% if sucursal.activa %}
+                                <i class="fas fa-check me-1"></i>Activa
+                            {% else %}
+                                <i class="fas fa-times me-1"></i>Inactiva
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{{ url_for('admin.listar_sucursales') }}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-cog me-2"></i>Gestionar Sucursales
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Notificaciones -->
+        <div class="card-enhanced">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Notificaciones
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle fa-2x me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Sistema Funcionando</h6>
+                            <p class="mb-0 small">Todos los sistemas están operando correctamente</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if pedidos_pendientes and pedidos_pendientes > 0 %}
+                <div class="alert alert-warning mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Pedidos Pendientes</h6>
+                            <p class="mb-0 small">Hay {{ pedidos_pendientes }} pedido(s) esperando atención</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="text-center">
+                    <button class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-cog me-1"></i>Configurar Notificaciones
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+{% endblock %}

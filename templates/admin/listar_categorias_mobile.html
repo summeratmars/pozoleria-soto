@@ -1,0 +1,175 @@
+{% extends "admin/base_admin_mobile.html" %}
+
+{% block title %}Gestión de Categorías - Pozolería Soto{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+{% block content %}
+<div class="admin-mobile-container">
+    <!-- Header de la página -->
+    <div class="admin-page-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-1">
+                    <i class="fas fa-tags me-2 text-primary"></i>
+                    Categorías
+                </h4>
+                <p class="text-muted small mb-0">Organiza tu menú por categorías</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-info">{{ categorias|length }} categorías</span>
+            </div>
+        </div>
+        
+        <!-- Botón de agregar -->
+        <div class="text-center mt-3">
+            <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus me-1"></i>Nueva Categoría
+            </a>
+        </div>
+    </div>
+
+    <!-- Búsqueda móvil -->
+    <div class="admin-filters-mobile mb-3">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control" 
+                   placeholder="Buscar categoría..." 
+                   id="busquedaCategoria">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Lista de categorías móvil -->
+    <div class="categorias-mobile-list">
+        {% for categoria in categorias %}
+        <div class="categoria-card-mobile mb-3" data-nombre="{{ categoria.nombre.lower() }}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <!-- Header de la categoría -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">{{ categoria.nombre }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Creada: {{ categoria.fecha_creacion.strftime('%d/%m/%Y') if categoria.fecha_creacion else 'N/D' }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary">
+                                {{ categoria.menu_items|length }} productos
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Descripción si existe -->
+                    {% if categoria.descripcion %}
+                    <p class="card-text small text-muted mb-2">
+                        {{ categoria.descripcion[:80] }}{% if categoria.descripcion|length > 80 %}...{% endif %}
+                    </p>
+                    {% endif %}
+
+                    <!-- Productos asociados -->
+                    {% if categoria.menu_items %}
+                    <div class="productos-asociados-mobile mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-utensils me-1"></i>Productos:
+                        </small>
+                        <div class="productos-lista-mobile">
+                            {% for item in categoria.menu_items[:3] %}
+                            <span class="badge bg-light text-dark me-1 mb-1">{{ item.nombre }}</span>
+                            {% endfor %}
+                            {% if categoria.menu_items|length > 3 %}
+                            <span class="badge bg-secondary">+{{ categoria.menu_items|length - 3 }} más</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="productos-asociados-mobile mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Sin productos asignados
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Botones de acción -->
+                    <div class="acciones-mobile">
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <a href="{{ url_for('admin.editar_categoria', id=categoria.id) }}" 
+                                   class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-outline-danger btn-sm w-100" 
+                                        onclick="eliminarCategoria({{ categoria.id }}, '{{ categoria.nombre }}', {{ categoria.menu_items|length }})">
+                                    <i class="fas fa-trash me-1"></i>Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not categorias %}
+    <div class="empty-state-mobile text-center py-5">
+        <i class="fas fa-tags fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">No hay categorías</h5>
+        <p class="text-muted">Crea categorías para organizar tu menú</p>
+        <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Crear Primera Categoría
+        </a>
+    </div>
+    {% endif %}
+ </div>
+
+<script>
+// Búsqueda
+document.getElementById('busquedaCategoria').addEventListener('input', function() {
+    const busqueda = this.value.toLowerCase();
+    const categorias = document.querySelectorAll('.categoria-card-mobile');
+    
+    categorias.forEach(categoria => {
+        const nombre = categoria.dataset.nombre;
+        const mostrar = nombre.includes(busqueda);
+        categoria.style.display = mostrar ? 'block' : 'none';
+    });
+});
+
+function eliminarCategoria(categoriaId, nombreCategoria, cantidadProductos) {
+    let mensaje = `¿Estás seguro de que deseas eliminar la categoría "${nombreCategoria}"?`;
+    
+    if (cantidadProductos > 0) {
+        mensaje += `\n\nEsta categoría tiene ${cantidadProductos} producto(s) asociado(s). Los productos quedarán sin categoría.`;
+    }
+    
+    if (confirm(mensaje)) {
+        fetch(`/admin/categoria/${categoriaId}/eliminar`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Error al eliminar la categoría');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar la categoría');
+        });
+    }
+}
+</script>
+{% endblock %}

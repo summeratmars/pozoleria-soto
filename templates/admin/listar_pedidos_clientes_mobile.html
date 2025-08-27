@@ -1,0 +1,262 @@
+{% extends "admin/base_admin_mobile.html" %}
+
+{% block title %}Pedidos de Clientes - Pozolería Soto{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+{% block content %}
+<div class="admin-mobile-container">
+    <!-- Header de la página -->
+    <div class="admin-page-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-1">
+                    <i class="fas fa-receipt me-2 text-primary"></i>
+                    Pedidos de Clientes
+                </h4>
+                <p class="text-muted small mb-0">Gestiona todos los pedidos recibidos</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-info">{{ pedidos|length }} pedidos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros móviles -->
+    <div class="admin-filters-mobile mb-3">
+        <div class="row g-2">
+            <div class="col-6">
+                <select class="form-select form-select-sm" id="filtroEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="preparando">Preparando</option>
+                    <option value="listo">Listo</option>
+                    <option value="entregado">Entregado</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <select class="form-select form-select-sm" id="filtroSucursal">
+                    <option value="">Todas las sucursales</option>
+                    {% for sucursal in sucursales %}
+                    <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de pedidos móvil -->
+    <div class="pedidos-mobile-list">
+        {% for pedido in pedidos %}
+        <div class="pedido-card-mobile mb-3" data-estado="{{ pedido.estado }}" data-sucursal="{{ pedido.sucursal_id }}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <!-- Header del pedido -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Pedido #{{ pedido.id }}</h6>
+                            <small class="text-muted">{{ pedido.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge 
+                                {% if pedido.estado == 'pendiente' %}bg-warning text-dark
+                                {% elif pedido.estado == 'preparando' %}bg-info
+                                {% elif pedido.estado == 'listo' %}bg-success
+                                {% elif pedido.estado == 'entregado' %}bg-secondary
+                                {% else %}bg-primary{% endif %}">
+                                {{ pedido.estado|title }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Información del cliente -->
+                    <div class="cliente-info-mobile mb-2">
+                        <div class="row g-1">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ pedido.nombre }}
+                                </small>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="fas fa-phone me-1"></i>
+                                    {{ pedido.telefono }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dirección colapsible -->
+                    <div class="direccion-mobile mb-2">
+                        <button class="btn btn-link btn-sm p-0 text-start" type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#direccion{{ pedido.id }}"
+                                aria-expanded="false">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            <small>Ver dirección</small>
+                        </button>
+                        <div class="collapse" id="direccion{{ pedido.id }}">
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    {{ pedido.calle }} {{ pedido.numero }}, {{ pedido.colonia }}<br>
+                                    {% if pedido.entre_calles %}Entre: {{ pedido.entre_calles }}<br>{% endif %}
+                                    {% if pedido.referencia %}{{ pedido.referencia }}{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total y sucursal -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-bold text-success">Total: ${{ "%.2f"|format(pedido.total) }}</span>
+                        </div>
+                        <div>
+                            <small class="text-muted">
+                                <i class="fas fa-store me-1"></i>
+                                {{ pedido.sucursal.nombre if pedido.sucursal else 'N/A' }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="acciones-mobile">
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <button class="btn btn-outline-primary btn-sm w-100" 
+                                        onclick="verDetallesPedido({{ pedido.id }})">
+                                    <i class="fas fa-eye me-1"></i>Detalles
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <div class="dropdown w-100">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown">
+                                        <i class="fas fa-edit me-1"></i>Estado
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="cambiarEstado({{ pedido.id }}, 'pendiente')">
+                                            <i class="fas fa-clock me-2"></i>Pendiente
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="cambiarEstado({{ pedido.id }}, 'preparando')">
+                                            <i class="fas fa-utensils me-2"></i>Preparando
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="cambiarEstado({{ pedido.id }}, 'listo')">
+                                            <i class="fas fa-check me-2"></i>Listo
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="cambiarEstado({{ pedido.id }}, 'entregado')">
+                                            <i class="fas fa-truck me-2"></i>Entregado
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not pedidos %}
+    <div class="empty-state-mobile text-center py-5">
+        <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">No hay pedidos</h5>
+        <p class="text-muted">Los pedidos de clientes aparecerán aquí</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de detalles del pedido -->
+<div class="modal fade" id="modalDetallesPedido" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>
+                    Detalles del Pedido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDetallesPedido">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+ </div>
+
+<script>
+// Filtros
+document.getElementById('filtroEstado').addEventListener('change', function() {
+    filtrarPedidos();
+});
+
+document.getElementById('filtroSucursal').addEventListener('change', function() {
+    filtrarPedidos();
+});
+
+function filtrarPedidos() {
+    const filtroEstado = document.getElementById('filtroEstado').value;
+    const filtroSucursal = document.getElementById('filtroSucursal').value;
+    const pedidos = document.querySelectorAll('.pedido-card-mobile');
+    
+    pedidos.forEach(pedido => {
+        const estado = pedido.dataset.estado;
+        const sucursal = pedido.dataset.sucursal;
+        
+        let mostrar = true;
+        
+        if (filtroEstado && estado !== filtroEstado) {
+            mostrar = false;
+        }
+        
+        if (filtroSucursal && sucursal !== filtroSucursal) {
+            mostrar = false;
+        }
+        
+        pedido.style.display = mostrar ? 'block' : 'none';
+    });
+}
+
+function verDetallesPedido(pedidoId) {
+    // Cargar detalles del pedido via AJAX
+    fetch(`/admin/pedido/${pedidoId}/detalles`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoDetallesPedido').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalDetallesPedido')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los detalles del pedido');
+        });
+}
+
+function cambiarEstado(pedidoId, nuevoEstado) {
+    if (confirm(`¿Cambiar estado a "${nuevoEstado}"?`)) {
+        fetch(`/admin/pedido/${pedidoId}/estado`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ estado: nuevoEstado })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al cambiar el estado');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado');
+        });
+    }
+}
+</script>
+{% endblock %}

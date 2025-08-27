@@ -1,0 +1,775 @@
+{% extends "base_desktop.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header con animación -->
+            <div class="consulta-header text-center mb-5">
+                <div class="search-animation mb-4">
+                    <div class="search-circle">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                    <div class="search-waves">
+                        <div class="wave wave-1"></div>
+                        <div class="wave wave-2"></div>
+                        <div class="wave wave-3"></div>
+                    </div>
+                </div>
+                <h1 class="display-5 text-primary mb-3">Consultar Estado del Pedido</h1>
+                <p class="lead text-muted">Ingresa tu número de pedido para conocer su estado actual y detalles</p>
+            </div>
+            
+            <div class="row">
+                <!-- Columna izquierda - Formulario -->
+                <div class="col-lg-4">
+                    <div class="card consulta-form-card sticky-top">
+                        <div class="card-header bg-gradient-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-search me-2"></i>Buscar Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" id="consultaForm">
+                                <div class="mb-4">
+                                    <label for="numero_pedido" class="form-label fw-bold">
+                                        <i class="fas fa-receipt me-2 text-primary"></i>Número de Pedido
+                                    </label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-hashtag text-primary"></i>
+                                        </span>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="numero_pedido" 
+                                               name="numero_pedido" 
+                                               placeholder="Ej: PZ001234"
+                                               value="{{ request.form.numero_pedido if request.form.numero_pedido }}"
+                                               required>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1 text-info"></i>
+                                        El número aparece en tu confirmación de pedido
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg w-100 search-btn">
+                                    <i class="fas fa-search me-2"></i>Buscar Pedido
+                                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                                </button>
+                            </form>
+                            
+                            <!-- Tips de ayuda -->
+                            <div class="help-tips mt-4">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-lightbulb me-2"></i>Tips de Búsqueda
+                                </h6>
+                                <ul class="list-unstyled small text-muted">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Revisa tu email de confirmación
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        El número inicia con "PZ"
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Verifica mayúsculas y números
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Columna derecha - Resultado -->
+                <div class="col-lg-8">
+                    {% if pedido %}
+                    <div class="pedido-resultado">
+                        <!-- Estado del pedido con timeline visual -->
+                        {# Normalización robusta del estado: eliminar acentos y mapear variantes #}
+                        {% set estado_raw = pedido.estado|lower|trim %}
+                        {% set estado_sin_acentos = estado_raw
+                            .replace('á','a')
+                            .replace('é','e')
+                            .replace('í','i')
+                            .replace('ó','o')
+                            .replace('ú','u')
+                            .replace('ü','u')
+                        %}
+                        {# Unificar separadores a guion bajo #}
+                        {% set estado_clean = estado_sin_acentos.replace(' ', '_') %}
+                        {# Mapping heurístico #}
+                        {% if 'cancel' in estado_clean or 'anula' in estado_clean or 'rechaz' in estado_clean %}
+                            {% set estado_norm = 'cancelado' %}
+                        {% elif 'pend' in estado_clean %}
+                            {% set estado_norm = 'pendiente' %}
+                        {% elif 'recib' in estado_clean or 'confirm' in estado_clean %}
+                            {% set estado_norm = 'recibido' %}
+                        {% elif 'prepar' in estado_clean or 'cocin' in estado_clean %}
+                            {% set estado_norm = 'preparando' %}
+                        {% elif 'camino' in estado_clean or 'repart' in estado_clean or 'envio' in estado_clean %}
+                            {% set estado_norm = 'en_camino' %}
+                        {% elif 'entreg' in estado_clean or 'final' in estado_clean or 'complet' in estado_clean %}
+                            {% set estado_norm = 'entregado' %}
+                        {% else %}
+                            {% set estado_norm = estado_clean %}
+                        {% endif %}
+                        <div class="card estado-card mb-4">
+                            <div class="card-header {% if estado_norm == 'cancelado' %}bg-danger{% elif estado_norm == 'entregado' %}bg-success{% elif estado_norm == 'en_camino' %}bg-warning{% elif estado_norm == 'preparando' %}bg-info{% else %}bg-secondary{% endif %} text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-{% if estado_norm == 'cancelado' %}times-circle{% elif estado_norm == 'entregado' %}check-circle{% elif estado_norm == 'en_camino' %}motorcycle{% elif estado_norm == 'preparando' %}utensils{% else %}clock{% endif %} me-2"></i>
+                                        Estado: {{ estado_norm.replace('_',' ')|title }}
+                                    </h5>
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-clock me-1"></i>{{ pedido.fecha.strftime('%H:%M') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if estado_norm == 'cancelado' %}
+                                <div class="estado-cancelado text-center py-4">
+                                    <div class="cancel-icon mb-3">
+                                        <span class="pulse-ring"></span>
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <h4 class="text-danger fw-bold mb-3">Pedido Cancelado</h4>
+                                    <p class="text-muted mb-4">Tu pedido fue cancelado. Posibles causas:</p>
+                                    <div class="row justify-content-center mb-4">
+                                        <div class="col-md-10">
+                                            <ul class="list-unstyled text-start razones-cancelacion">
+                                                <li><i class="fas fa-user-slash text-danger me-2"></i>Cancelación solicitada por el cliente</li>
+                                                <li><i class="fas fa-phone-slash text-danger me-2"></i>No se pudo confirmar vía llamada / WhatsApp</li>
+                                                <li><i class="fas fa-box-open text-danger me-2"></i>Falta de disponibilidad de algún producto</li>
+                                                <li><i class="fas fa-clock text-danger me-2"></i>Fuera de horario de operación</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                        <a href="{{ url_for('catalogo') }}" class="btn btn-outline-danger"><i class="fas fa-redo me-2"></i>Hacer Nuevo Pedido</a>
+                                        <a href="https://wa.me/525575251742?text=Hola, quisiera saber por qué se canceló mi pedido {{ pedido.numero_pedido }}" target="_blank" class="btn btn-success"><i class="fab fa-whatsapp me-2"></i>Contactar</a>
+                                    </div>
+                                </div>
+                                <hr>
+                                {% endif %}
+                                {# estado_norm ya calculado arriba #}
+                                {# Definición de pasos en orden lógico (sin 'pendiente' que es estado inicial fuera de la línea) #}
+                                {% if estado_norm != 'cancelado' %}
+                                {% set pasos_linea = ['recibido','preparando','en_camino','entregado'] %}
+                                {# Calcular índice de progreso (0 = nada, 1..len(pasos_linea)) #}
+                                {# Regla: incluso 'pendiente' cuenta como paso 1 (Recibido) para que el cliente vea avance inmediato #}
+                                {% if estado_norm == 'pendiente' %}
+                                    {% set progress_index = 1 %}
+                                {% elif estado_norm in pasos_linea %}
+                                    {% set progress_index = pasos_linea.index(estado_norm) + 1 %}
+                                {% else %}
+                                    {% set progress_index = 1 %} {# fallback mínimo visible #}
+                                {% endif %}
+                                {% set total_steps = pasos_linea|length %}
+                                {# Datos de pasos para renderizar #}
+                                {% set pasos = [
+                                    {'key':'recibido','icon':'check-circle','titulo':'Recibido','desc':'Pedido confirmado','pos':1},
+                                    {'key':'preparando','icon':'utensils','titulo':'Preparando','desc':'En cocina','pos':2},
+                                    {'key':'en_camino','icon':'motorcycle','titulo':'En Camino','desc':'Siendo entregado','pos':3},
+                                    {'key':'entregado','icon':'home','titulo':'Entregado','desc':'¡Completado!','pos':4}
+                                ] %}
+                                <div class="timeline-horizontal">
+                                    <div class="timeline-track">
+                                        <div class="timeline-track-progress" data-progress="{{ (progress_index / total_steps)*100 }}"></div>
+                                    </div>
+                                    {% for paso in pasos %}
+                                        {% set estado_step = 'completed' if progress_index > paso.pos else ('current' if progress_index == paso.pos else 'upcoming') %}
+                                        {% if estado_step == 'completed' %}
+                                            {% set circle_inline = 'background:#28a745!important;color:#fff!important;border:4px solid #fff;box-shadow:0 0 0 4px rgba(40,167,69,0.15),0 4px 15px rgba(0,0,0,0.15);' %}
+                                        {% elif estado_step == 'current' %}
+                                            {% set circle_inline = 'background:#ffc107!important;color:#212529!important;border:4px solid #fff;box-shadow:0 0 0 4px rgba(255,193,7,0.25),0 4px 18px rgba(255,193,7,0.4);' %}
+                                        {% else %}
+                                            {% set circle_inline = '' %}
+                                        {% endif %}
+                                        <div class="timeline-point {% if estado_step == 'completed' %}completed{% elif estado_step == 'current' %}completed current{% else %}upcoming{% endif %}" data-step="{{ paso.pos }}" data-step-state="{{ estado_step }}" data-progreso="{{ progress_index }}" data-estado-normalizado="{{ estado_norm }}">
+                                            <div class="point-circle" style="{{ circle_inline }}">
+                                                <i class="fas fa-{{ paso.icon }}"></i>
+                                            </div>
+                                            <div class="point-label">
+                                                <h6>{{ paso.titulo }}</h6>
+                                                <small>{{ paso.desc }}</small>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-danger mb-0 text-center fw-semibold small" role="alert">
+                                    La línea de progreso se desactiva para pedidos cancelados.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Información del pedido -->
+                            <div class="col-md-6">
+                                <div class="card info-pedido mb-4">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-info-circle me-2 text-primary"></i>Información del Pedido
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="info-list">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-hashtag text-primary me-2"></i>Número
+                                                </div>
+                                                <div class="info-value">
+                                                    <span class="numero-badge">{{ pedido.numero_pedido }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-calendar text-primary me-2"></i>Fecha
+                                                </div>
+                                                <div class="info-value">
+                                                    {{ pedido.fecha.strftime('%d/%m/%Y %H:%M') }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-dollar-sign text-primary me-2"></i>Total
+                                                </div>
+                                                <div class="info-value">
+                                                    <span class="precio-total">${{ "%.2f"|format(pedido.total) }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if pedido.sucursal %}
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-store text-primary me-2"></i>Sucursal
+                                                </div>
+                                                <div class="info-value">
+                                                    {{ pedido.sucursal.nombre }}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dirección de entrega -->
+                            <div class="col-md-6">
+                                {% if pedido.direccion_entrega %}
+                                <div class="card direccion-card mb-4">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>Dirección de Entrega
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <address class="mb-3">
+                                            <strong>{{ pedido.direccion_entrega }}</strong>
+                                        </address>
+                                        {% if pedido.referencias_entrega %}
+                                        <div class="referencias">
+                                            <small class="text-muted">
+                                                <i class="fas fa-sticky-note me-1"></i>
+                                                <strong>Referencias:</strong> {{ pedido.referencias_entrega }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Botón para ver en mapa (opcional) -->
+                                        <div class="mt-3">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="verEnMapa('{{ pedido.direccion_entrega }}')">
+                                                <i class="fas fa-map me-1"></i>Ver en Mapa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Contacto -->
+                                <div class="card contacto-card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-headset me-2 text-success"></i>¿Necesitas ayuda?
+                                        </h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <p class="card-text mb-3">
+                                            Si tienes alguna pregunta sobre tu pedido, contáctanos
+                                        </p>
+                                        <div class="contact-buttons">
+                                            <a href="https://wa.me/525575251742?text=Hola, tengo una pregunta sobre mi pedido {{ pedido.numero_pedido }}" 
+                                               target="_blank" 
+                                               class="btn btn-success me-2">
+                                                <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                            </a>
+                                            <a href="tel:5575251742" class="btn btn-outline-primary">
+                                                <i class="fas fa-phone me-1"></i>Llamar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Productos del pedido -->
+                        {% if pedido.items %}
+                        <div class="card productos-card">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-list me-2 text-primary"></i>Productos Pedidos
+                                </h6>
+                                <span class="badge bg-primary">{{ pedido.items|length }} productos</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio Unit.</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in pedido.items %}
+                                            <tr>
+                                                <td>
+                                                    <div class="producto-info">
+                                                        <h6 class="producto-nombre mb-1">{{ item.menu_item.nombre }}</h6>
+                                                        {% if item.opciones_personalizadas %}
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-cog me-1"></i>
+                                                            {{ item.opciones_personalizadas }}
+                                                        </small>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary rounded-pill">{{ item.cantidad }}</span>
+                                                </td>
+                                                <td>${{ "%.2f"|format(item.precio_unitario) }}</td>
+                                                <td class="fw-bold text-success">${{ "%.2f"|format(item.precio_total) }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="3" class="text-end">Total del Pedido:</th>
+                                                <th class="text-success">${{ "%.2f"|format(pedido.total) }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% elif request.method == 'POST' %}
+                    <!-- Pedido no encontrado -->
+                    <div class="alert alert-warning alert-dismissible fade show">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Pedido no encontrado</h6>
+                                <p class="mb-0">
+                                    No se encontró ningún pedido con el número <strong>{{ request.form.numero_pedido }}</strong>.
+                                    Por favor, verifica que el número sea correcto.
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    
+                    <!-- Sugerencias de ayuda -->
+                    <div class="card help-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="card-title">¿No encuentras tu pedido?</h5>
+                            <p class="card-text">Aquí tienes algunas sugerencias:</p>
+                            <ul class="list-unstyled text-start">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Verifica que hayas copiado correctamente el número de pedido
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Revisa tu email de confirmación o mensaje de WhatsApp
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Asegúrate de que el pedido haya sido realizado correctamente
+                                </li>
+                            </ul>
+                            <div class="mt-3">
+                                <a href="https://wa.me/525575251742?text=Hola, no puedo encontrar mi pedido" 
+                                   target="_blank" 
+                                   class="btn btn-success me-2">
+                                    <i class="fab fa-whatsapp me-1"></i>Contactar por WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- Estado inicial -->
+                    <div class="welcome-message text-center">
+                        <i class="fas fa-search fa-5x text-muted mb-4"></i>
+                        <h4 class="text-muted mb-3">Ingresa tu número de pedido</h4>
+                        <p class="text-muted">
+                            Utiliza el formulario de la izquierda para consultar el estado de tu pedido.
+                            El número de pedido se encuentra en tu confirmación.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Botones de navegación -->
+            <div class="navigation-buttons text-center mt-5">
+                <a href="{{ url_for('catalogo') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-utensils me-2"></i>Hacer Nuevo Pedido
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-home me-2"></i>Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos específicos para consulta de pedido desktop */
+.search-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.search-circle {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.search-waves {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.wave {
+    position: absolute;
+    border: 2px solid var(--pozoleria-orange);
+    border-radius: 50%;
+    opacity: 0;
+    animation: waveAnimation 3s ease-in-out infinite;
+}
+
+.wave-1 {
+    width: 120px;
+    height: 120px;
+    animation-delay: 0s;
+}
+
+.wave-2 {
+    width: 150px;
+    height: 150px;
+    animation-delay: 1s;
+}
+
+.wave-3 {
+    width: 180px;
+    height: 180px;
+    animation-delay: 2s;
+}
+
+@keyframes waveAnimation {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0;
+    }
+}
+
+.consulta-form-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    top: 100px;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.search-btn {
+    border-radius: 15px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+}
+
+.timeline-horizontal {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 40px 0;
+}
+
+.timeline-track {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.timeline-track-progress {
+    position:absolute;
+    top:0; left:0; height:100%;
+    background: linear-gradient(90deg, #ffc107, #28a745);
+    border-radius:4px;
+    transition:width .6s ease;
+}
+
+.timeline-point {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+}
+
+.point-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 15px;
+    transition: all 0.3s ease;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.timeline-point.completed .point-circle {
+    background: #28a745 !important;
+    color: #fff !important;
+    animation: completedPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 0 4px rgba(40,167,69,0.15), 0 4px 15px rgba(0,0,0,0.15);
+}
+
+/* Reforzar etiquetas de texto cuando completed/current (sin inline styles) */
+.timeline-point.completed .point-label h6,
+.timeline-point.completed .point-label small { color:#28a745 !important; }
+.timeline-point.current .point-label h6 { color:#d39e00 !important; }
+.timeline-point.current .point-label small { color:#b38400 !important; }
+
+.timeline-point.current .point-circle {
+    background: #ffc107 !important;
+    color: #212529 !important;
+    animation: currentPulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 0 4px rgba(255,193,7,0.25), 0 4px 18px rgba(255,193,7,0.4);
+}
+
+/* Pasos futuros más suaves */
+.timeline-point:not(.completed):not(.current) .point-circle {
+    background:#f1f3f5;
+    color:#adb5bd;
+}
+.timeline-point:not(.completed):not(.current) .point-label h6 { color:#adb5bd; }
+.timeline-point:not(.completed):not(.current) .point-label small { color:#ced4da; }
+
+/* upcoming (paso futuro alcanzable) */
+.timeline-point.upcoming .point-circle { background:#eef2f5; color:#c0c7ce; }
+.timeline-point.completed .point-label h6, .timeline-point.completed .point-label small { color:#28a745 !important; }
+.timeline-point.current .point-label h6 { color:#d39e00 !important; }
+.timeline-point.current .point-label small { color:#b38400 !important; }
+.timeline-point.upcoming .point-label h6 { color:#b0b7bd; }
+.timeline-point.upcoming .point-label small { color:#c9d0d6; }
+
+@keyframes completedPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes currentPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    50% { transform: scale(1.15); box-shadow: 0 4px 25px rgba(255,193,7,0.4); }
+}
+
+.point-label h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.point-label small {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.numero-badge {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.precio-total {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #28a745;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.producto-nombre {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.contact-buttons .btn {
+    border-radius: 20px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.contact-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.navigation-buttons .btn {
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navigation-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.welcome-message {
+    padding: 80px 20px;
+    color: #adb5bd;
+}
+
+.help-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+/* Estado cancelado estilos */
+.estado-cancelado .cancel-icon {
+    position: relative;
+    font-size: 4rem;
+    color: #dc3545;
+}
+.estado-cancelado .cancel-icon .pulse-ring {
+    position:absolute;top:50%;left:50%;width:120px;height:120px;transform:translate(-50%,-50%);border:6px solid rgba(220,53,69,.35);border-radius:50%;animation:pulseCancel 2.2s ease-in-out infinite;
+}
+@keyframes pulseCancel {0%{transform:translate(-50%,-50%) scale(.8);opacity:.9}70%{transform:translate(-50%,-50%) scale(1.15);opacity:0}100%{opacity:0}}
+.razones-cancelacion li {margin-bottom:6px;font-size:.95rem;}
+.razones-cancelacion i {width:20px;text-align:center;}
+</style>
+
+<script>
+// Ajustar ancho de la barra de progreso usando data-progress (evita inline Jinja en style)
+document.addEventListener('DOMContentLoaded', function() {
+    const prog = document.querySelector('.timeline-track-progress');
+    if (prog) {
+        const pct = parseFloat(prog.getAttribute('data-progress')||'0');
+        prog.style.width = pct + '%';
+    }
+});
+function verEnMapa(direccion) {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+    window.open(url, '_blank');
+}
+
+// Animación del botón de búsqueda
+document.getElementById('consultaForm').addEventListener('submit', function() {
+    const btn = document.querySelector('.search-btn');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    
+    // Re-habilitar después de un tiempo si no hay respuesta
+    setTimeout(() => {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }, 10000);
+});
+</script>
+{% endblock %}

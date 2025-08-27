@@ -1,0 +1,27 @@
+{% extends 'admin/base_admin_mobile.html' %}
+{% block content %}
+<div class="px-3 py-3">
+  <div class="mb-3">
+    <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i></a>
+  </div>
+  <h2 class="h5 mb-3"><i class="fas fa-user-plus me-2 text-primary"></i>Nuevo Admin</h2>
+  <form method="post" class="needs-validation" novalidate>
+    <div class="mb-3">
+      <label class="form-label small fw-bold" for="usuario">Usuario</label>
+      <input class="form-control" id="usuario" type="text" name="usuario" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small fw-bold" for="password">Contraseña</label>
+      <input class="form-control" id="password" type="password" name="password" required>
+    </div>
+    <div class="mb-4">
+      <label class="form-label small fw-bold" for="nombre">Nombre</label>
+      <input class="form-control" id="nombre" type="text" name="nombre" required>
+    </div>
+    <div class="d-grid gap-2">
+      <button class="btn btn-success" type="submit"><i class="fas fa-save me-1"></i>Guardar</button>
+      <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-light">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

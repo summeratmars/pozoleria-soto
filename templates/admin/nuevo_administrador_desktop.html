@@ -1,0 +1,35 @@
+{% extends 'admin/base_admin_desktop.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Nuevo Administrador</h1>
+    <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Volver</a>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-xl-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <form method="post" class="needs-validation" novalidate>
+            <div class="mb-4">
+              <label class="form-label fw-bold" for="usuario">Usuario</label>
+              <input class="form-control form-control-lg" id="usuario" type="text" name="usuario" required placeholder="usuario123">
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold" for="password">Contraseña</label>
+              <input class="form-control form-control-lg" id="password" type="password" name="password" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold" for="nombre">Nombre</label>
+              <input class="form-control form-control-lg" id="nombre" type="text" name="nombre" required>
+            </div>
+            <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+              <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-light btn-lg"><i class="fas fa-times me-1"></i>Cancelar</a>
+              <button class="btn btn-success btn-lg" type="submit"><i class="fas fa-save me-1"></i>Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

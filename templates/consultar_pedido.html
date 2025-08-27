@@ -1,0 +1,538 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar Pedido - {{ super() }}{% endblock %}
+
+{% block content %}
+<style>
+/* Estilos responsive para consultar pedido */
+.consulta-container {
+    padding: 30px 0;
+    min-height: 70vh;
+}
+
+.consulta-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+}
+
+.icon-wrapper {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.form-control-custom {
+    border-radius: 15px;
+    border: 2px solid #e9ecef;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control-custom:focus {
+    border-color: var(--pozoleria-orange);
+    box-shadow: 0 0 0 0.2rem rgba(233, 124, 26, 0.25);
+}
+
+.btn-consultar {
+    background: linear-gradient(135deg, var(--pozoleria-orange), #d86b1a);
+    border: none;
+    border-radius: 15px;
+    padding: 15px 30px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(233, 124, 26, 0.3);
+}
+
+.btn-consultar:hover {
+    background: linear-gradient(135deg, #d86b1a, #c96a14);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(233, 124, 26, 0.4);
+    color: white;
+}
+
+.security-alert {
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    padding: 20px;
+}
+
+.pedido-details {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 30px;
+}
+
+.status-badge {
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.info-row {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--pozoleria-orange);
+}
+
+.productos-list {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.producto-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--pozoleria-orange);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .consulta-container {
+        padding: 20px 0;
+    }
+    
+    .icon-wrapper {
+        font-size: 3rem !important;
+    }
+    
+    h1.display-5 {
+        font-size: 2.5rem;
+    }
+    
+    .consulta-card .card-body {
+        padding: 30px 20px;
+    }
+    
+    .form-control-custom {
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+    
+    .btn-consultar {
+        padding: 12px 25px;
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    .security-alert {
+        padding: 15px;
+    }
+    
+    .pedido-details {
+        padding: 20px 15px;
+        margin-top: 20px;
+    }
+    
+    .info-row {
+        padding: 12px 15px;
+    }
+    
+    .status-badge {
+        font-size: 1rem;
+        padding: 8px 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .consulta-container {
+        padding: 15px 0;
+    }
+    
+    .icon-wrapper {
+        font-size: 2.5rem !important;
+    }
+    
+    h1.display-5 {
+        font-size: 2rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .consulta-card .card-body {
+        padding: 25px 15px;
+    }
+    
+    .form-control-custom {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+    
+    .btn-consultar {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+    
+    .security-alert {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .pedido-details {
+        padding: 15px 10px;
+    }
+    
+    .info-row {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .productos-list {
+        padding: 15px;
+    }
+    
+    .producto-item {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<div class="container consulta-container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Encabezado -->
+            <div class="text-center mb-5">
+                <div class="icon-wrapper mb-3" style="font-size: 4rem; color: var(--pozoleria-orange);">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <h1 class="display-5 fw-bold mb-3" style="color: #2c3e50;">
+                    Consultar Pedido
+                </h1>
+                <p class="lead text-muted">
+                    Ingresa tu número de pedido para ver el estatus
+                </p>
+            </div>
+
+            <!-- Formulario de consulta -->
+            <div class="card consulta-card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <!-- Mensaje de seguridad -->
+                    <div class="alert security-alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt me-3" style="font-size: 1.5rem; color: #1976d2;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1" style="color: #1976d2;">Verificación de Seguridad</h6>
+                                <p class="mb-0">Por tu seguridad y privacidad, necesitamos verificar tanto tu número de pedido como tu teléfono.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" id="consultaForm">
+                        <div class="mb-4">
+                            <label for="numero_pedido" class="form-label fw-bold" style="color: #2c3e50;">
+                                <i class="fas fa-receipt me-2" style="color: var(--pozoleria-orange);"></i>
+                                Número de Pedido
+                            </label>
+                            <input type="text" class="form-control form-control-custom" 
+                                   id="numero_pedido" name="numero_pedido" 
+                                   placeholder="Ej: AB123456" 
+                                   style="font-family: 'Courier New', monospace; text-transform: uppercase;"
+                                   maxlength="8" required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                El número de pedido aparece en tu confirmación
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="telefono" class="form-label fw-bold" style="color: #2c3e50;">
+                                <i class="fas fa-phone me-2" style="color: var(--pozoleria-orange);"></i>
+                                Número de Teléfono
+                            </label>
+                            <input type="tel" class="form-control form-control-custom" 
+                                   id="telefono" name="telefono" 
+                                   placeholder="Ej: 555-1234567" 
+                                   required>
+                            <div class="form-text">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Por seguridad, necesitamos verificar tu teléfono
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-consultar">
+                                <i class="fas fa-search me-2"></i>
+                                Consultar Estatus
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if pedido %}
+            <!-- Resultado de la consulta -->
+            <div class="card shadow-lg border-0 mt-4" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <div class="row align-items-center mb-4">
+                        <div class="col">
+                            <h3 class="fw-bold mb-0" style="color: #2c3e50;">
+                                <i class="fas fa-receipt me-2" style="color: var(--pozoleria-orange);"></i>
+                                Pedido {{ pedido.numero_pedido }}
+                            </h3>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge badge-lg px-3 py-2" 
+                                  style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); font-size: 0.9rem; border-radius: 20px;">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ pedido.estado or 'Recibido' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Información del pedido -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-card p-3" style="background: #f8f9fa; border-radius: 15px;">
+                                <h6 class="fw-bold mb-2" style="color: #2c3e50;">
+                                    <i class="fas fa-user me-2" style="color: var(--pozoleria-orange);"></i>
+                                    Cliente
+                                </h6>
+                                <p class="mb-1">{{ pedido.nombre }}</p>
+                                <p class="mb-0 text-muted">
+                                    <i class="fas fa-phone me-1"></i>
+                                    {{ pedido.telefono }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3" style="background: #f8f9fa; border-radius: 15px;">
+                                <h6 class="fw-bold mb-2" style="color: #2c3e50;">
+                                    <i class="fas fa-map-marker-alt me-2" style="color: var(--pozoleria-orange);"></i>
+                                    Entrega
+                                </h6>
+                                <p class="mb-1">{{ pedido.calle }} {{ pedido.numero }}</p>
+                                <p class="mb-0 text-muted">{{ pedido.colonia }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3" style="background: #f8f9fa; border-radius: 15px;">
+                                <h6 class="fw-bold mb-2" style="color: #2c3e50;">
+                                    <i class="fas fa-calendar-alt me-2" style="color: var(--pozoleria-orange);"></i>
+                                    Fecha del Pedido
+                                </h6>
+                                <p class="mb-0">{{ pedido.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3" style="background: #f8f9fa; border-radius: 15px;">
+                                <h6 class="fw-bold mb-2" style="color: #2c3e50;">
+                                    <i class="fas fa-dollar-sign me-2" style="color: var(--pozoleria-orange);"></i>
+                                    Total
+                                </h6>
+                                <p class="mb-0 fw-bold" style="color: var(--pozoleria-orange); font-size: 1.2rem;">
+                                    ${{ "%.2f"|format(pedido.total) }}
+                                </p>
+                            </div>
+                        </div>
+                        {% if pedido.forma_pago %}
+                        <div class="col-md-6">
+                            <div class="info-card p-3" style="background: #f8f9fa; border-radius: 15px;">
+                                <h6 class="fw-bold mb-2" style="color: #2c3e50;">
+                                    <i class="fas fa-credit-card me-2" style="color: var(--pozoleria-orange);"></i>
+                                    Método de Pago
+                                </h6>
+                                <p class="mb-0 text-capitalize">{{ pedido.forma_pago }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Detalles del pedido -->
+                    {% if pedido.productos %}
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3" style="color: #2c3e50;">
+                            <i class="fas fa-list me-2" style="color: var(--pozoleria-orange);"></i>
+                            Productos Ordenados
+                        </h6>
+                        <div class="productos-list" style="background: #f8f9fa; border-radius: 15px; padding: 20px;">
+                            {% set productos_data = pedido.productos | fromjson %}
+                            {% for producto in productos_data %}
+                            <div class="producto-item d-flex justify-content-between align-items-start mb-3 pb-3" 
+                                 style="border-bottom: 1px solid #dee2e6;">
+                                <div>
+                                    <h6 class="mb-1">{{ producto.nombre }}</h6>
+                                    <small class="text-muted">Cantidad: {{ producto.cantidad }}</small>
+                                    {% if producto.opciones_personalizadas %}
+                                    <div class="mt-1">
+                                        {% for opcion in producto.opciones_personalizadas %}
+                                        <small class="badge bg-light text-dark me-1">{{ opcion }}</small>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold" style="color: var(--pozoleria-orange);">
+                                        ${{ "%.2f"|format(producto.precio_total) }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Estado del pedido -->
+                    <div class="mt-4 p-4" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border-radius: 15px;">
+                        <div class="text-center">
+                            <i class="fas fa-info-circle mb-2" style="font-size: 2rem; color: #1976d2;"></i>
+                            <h6 class="fw-bold mb-2" style="color: #1976d2;">Estado del Pedido</h6>
+                            <p class="mb-0">
+                                Tu pedido ha sido <strong>{{ pedido.estado or 'recibido' }}</strong> y está siendo procesado.
+                                Te contactaremos pronto para confirmar la entrega.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% elif request.method == 'POST' %}
+            <!-- Pedido no encontrado o datos incorrectos -->
+            <div class="alert alert-warning mt-4" style="border-radius: 15px; border: none;">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <h6 class="alert-heading mb-1">Datos incorrectos</h6>
+                        <p class="mb-0">No se encontró ningún pedido con esos datos. Verifica que el número de pedido y teléfono sean correctos.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Botón de regreso -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4 py-2" 
+                   style="border-radius: 25px;">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Regresar al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --pozoleria-orange: #e97c1a;
+}
+
+.icon-wrapper {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+.info-card {
+    transition: background 0.3s ease;
+}
+
+.info-card:hover {
+    background: #e9ecef !important;
+}
+
+#numero_pedido {
+    transition: all 0.3s ease;
+}
+
+#numero_pedido:focus {
+    border-color: var(--pozoleria-orange);
+    box-shadow: 0 0 0 0.2rem rgba(233, 124, 26, 0.25);
+    transform: scale(1.02);
+}
+
+.producto-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.badge-lg {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const numeroInput = document.getElementById('numero_pedido');
+    const telefonoInput = document.getElementById('telefono');
+    
+    // Convertir número de pedido a mayúsculas automáticamente
+    numeroInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    
+    // Formatear teléfono automáticamente (remover espacios y caracteres especiales excepto guiones)
+    telefonoInput.addEventListener('input', function() {
+        // Permitir solo números, guiones y espacios
+        this.value = this.value.replace(/[^\d\s\-]/g, '');
+    });
+    
+    // Validación del formulario
+    document.getElementById('consultaForm').addEventListener('submit', function(e) {
+        const numero = numeroInput.value.trim();
+        const telefono = telefonoInput.value.trim();
+        const numeroPattern = /^[A-Z]{2}[0-9]{6}$/;
+        
+        // Validar formato del número de pedido
+        if (!numeroPattern.test(numero)) {
+            e.preventDefault();
+            numeroInput.setCustomValidity('El número de pedido debe tener el formato: 2 letras seguidas de 6 números (ej: AB123456)');
+            numeroInput.reportValidity();
+            return;
+        } else {
+            numeroInput.setCustomValidity('');
+        }
+        
+        // Validar que el teléfono no esté vacío y tenga al menos 10 caracteres
+        if (!telefono || telefono.length < 10) {
+            e.preventDefault();
+            telefonoInput.setCustomValidity('El número de teléfono debe tener al menos 10 dígitos');
+            telefonoInput.reportValidity();
+            return;
+        } else {
+            telefonoInput.setCustomValidity('');
+        }
+    });
+    
+    // Limpiar validaciones personalizadas cuando el usuario empiece a escribir
+    numeroInput.addEventListener('input', function() {
+        this.setCustomValidity('');
+    });
+    
+    telefonoInput.addEventListener('input', function() {
+        this.setCustomValidity('');
+    });
+});
+</script>
+{% endblock %}

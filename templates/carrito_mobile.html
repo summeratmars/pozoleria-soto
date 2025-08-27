@@ -1,0 +1,240 @@
+{% extends "base_mobile.html" %}
+{% block content %}
+<div class="container py-4">
+    <!-- Header del Carrito -->
+    <div class="carrito-header text-center mb-4">
+        <h1 class="display-5">Mi Carrito</h1>
+        <p class="lead text-muted">Revisa tu pedido antes de continuar</p>
+        <div class="decorative-line mx-auto"></div>
+    </div>
+
+    {% if productos %}
+        <!-- Productos en el carrito -->
+        <div class="carrito-productos mb-4">
+            {% for item in productos %}
+            <div class="card carrito-item mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-3">
+                            {% if item.producto.imagen %}
+                                <img src="{{ url_for('static', filename='uploads/' + item.producto.imagen) }}" 
+                                     class="img-fluid rounded" 
+                                     alt="{{ item.producto.nombre }}"
+                                     style="height: 60px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="height: 60px; width: 60px;">
+                                    <i class="fas fa-utensils text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-9">
+                            <h6 class="card-title mb-1">{{ item.producto.nombre }}</h6>
+                            <p class="card-text small text-muted mb-2">
+                                Cantidad: {{ item.cantidad }} | 
+                                Precio: ${{ "%.2f"|format(item.producto.precio) }}
+                            </p>
+                            
+                            <!-- Opciones personalizadas -->
+                            {% if item.opciones_personalizadas %}
+                                <div class="opciones-seleccionadas mb-2">
+                                    {% for opcion in item.opciones_personalizadas %}
+                                        <span class="badge bg-info me-1">
+                                            {{ opcion.valor_texto }}
+                                            {% if opcion.precio > 0 %}
+                                                (+${{ "%.2f"|format(opcion.precio) }})
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Controles cantidad y eliminar -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="cantidad-controls">
+                                    <form method="POST" action="{{ url_for('cambiar_cantidad_item') }}" class="d-inline">
+                                        <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                        <input type="hidden" name="delta" value="-1">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" 
+                                                {% if item.cantidad <= 1 %}disabled{% endif %}>
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </form>
+                                    <span class="mx-3 fw-bold">{{ item.cantidad }}</span>
+                                    <form method="POST" action="{{ url_for('cambiar_cantidad_item') }}" class="d-inline">
+                                        <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                        <input type="hidden" name="delta" value="1">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <div class="d-flex align-items-center">
+                                    <span class="fw-bold text-success me-3">
+                                        ${{ "%.2f"|format(item.subtotal) }}
+                                    </span>
+                                    <form method="POST" action="{{ url_for('eliminar_item') }}" class="d-inline">
+                                        <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Resumen del pedido -->
+        <div class="card resumen-pedido mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Resumen del Pedido</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fs-5 fw-bold">Total a Pagar:</span>
+                    <span class="fs-4 fw-bold text-success">${{ "%.2f"|format(total) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="acciones-carrito">
+            <a href="{{ url_for('catalogo') }}" class="btn btn-outline-primary btn-lg mb-3 w-100">
+                <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+            </a>
+            
+            <form method="POST" action="{{ url_for('checkout') }}" id="checkoutForm">
+                <!-- Campo oculto para enviar datos del carrito móvil -->
+                <input type="hidden" name="carrito_data" id="carritoDataMobile" value="">
+                <input type="hidden" name="sucursal_id" id="sucursalIdMobile" value="">
+                <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                    <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                </button>
+            </form>
+            
+            <form method="POST" action="{{ url_for('limpiar_carrito') }}" 
+                  onsubmit="return confirm('¿Estás seguro de que quieres vaciar el carrito?')">
+                <button type="submit" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="fas fa-trash me-2"></i>Vaciar Carrito
+                </button>
+            </form>
+        </div>
+
+    {% else %}
+        <!-- Carrito vacío -->
+        <div class="carrito-vacio text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-cart fa-5x text-muted"></i>
+            </div>
+            <h3 class="text-muted mb-3">Tu carrito está vacío</h3>
+            <p class="text-muted mb-4">¡Agrega algunos productos deliciosos a tu carrito!</p>
+            <a href="{{ url_for('catalogo') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-utensils me-2"></i>Ver Catálogo
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sincronizar carrito localStorage al backend (permitirá mostrar items si se renderizó vacío)
+    try {
+        const sucursalId = localStorage.getItem('sucursal_id') || '1';
+        const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal') || '{}');
+        const carritoActual = carritos[sucursalId] || [];
+        if (carritoActual.length > 0 && !{{ 'true' if productos else 'false' }}) {
+        fetch('/sincronizar_carrito', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: carritoActual })
+            }).then(r=>r.json()).then(resp => {
+                if (resp.success) {
+                    console.log('🔄 Carrito móvil sincronizado ('+resp.items+' items), recargando vista');
+            if (typeof actualizarCarritoHeader === 'function') { actualizarCarritoHeader(); }
+                    window.location.reload();
+                } else {
+                    console.warn('⚠️ Falló sincronización carrito móvil:', resp.error);
+                }
+            }).catch(err => console.error('❌ Error sync carrito móvil:', err));
+        }
+    } catch(e) { console.error('❌ Excepción sync carrito móvil:', e); }
+    // Preparar datos del carrito para checkout en móvil
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            // Obtener carrito actual del localStorage
+            const sucursalId = localStorage.getItem('sucursal_id') || '1';
+            const carritos = JSON.parse(localStorage.getItem('carritos_por_sucursal')) || {};
+            const carritoActual = carritos[sucursalId] || [];
+            
+            // Convertir formato para el backend
+            const carritoData = carritoActual.map(item => ({
+                id: item.producto_id,
+                nombre: item.nombre,
+                cantidad: item.cantidad,
+                precio_unitario: item.precio_unitario,
+                total: item.total,
+                opciones_personalizadas: item.opciones || []
+            }));
+            
+            // Llenar campos ocultos
+            document.getElementById('carritoDataMobile').value = JSON.stringify(carritoData);
+            document.getElementById('sucursalIdMobile').value = sucursalId;
+            
+            console.log('📱 Enviando datos del carrito móvil al checkout:', carritoData);
+        });
+    }
+    // --- Sincronizar acciones (eliminar, cambiar cantidad, vaciar) también a localStorage ---
+    const sucursalActual = localStorage.getItem('sucursal_id') || '1';
+    function leerCarritos(){
+        try { return JSON.parse(localStorage.getItem('carritos_por_sucursal')||'{}'); } catch { return {}; }
+    }
+    function guardarCarritos(carritos){ localStorage.setItem('carritos_por_sucursal', JSON.stringify(carritos)); }
+    function actualizarLocalStorageAccion(tipo, indice, delta){
+        const carritos = leerCarritos();
+        const arr = carritos[sucursalActual] || [];
+        if(tipo==='eliminar'){
+            if(indice>=0 && indice < arr.length){ arr.splice(indice,1); }
+        } else if(tipo==='cantidad'){
+            if(indice>=0 && indice < arr.length){
+                const item = arr[indice];
+                const nueva = Math.max(1, (item.cantidad||1) + delta);
+                item.cantidad = nueva; // ajustar campo estándar
+            }
+        } else if(tipo==='limpiar'){
+            carritos[sucursalActual] = [];
+        }
+        carritos[sucursalActual] = arr;
+        guardarCarritos(carritos);
+        if(window.actualizarCarritoHeader) window.actualizarCarritoHeader();
+    }
+    // Interceptar formularios de cantidad
+    document.querySelectorAll('form[action="'+ '{{ url_for('cambiar_cantidad_item') }}' +'"]').forEach(f=>{
+        f.addEventListener('submit', function(){
+            const indice = parseInt(f.querySelector('input[name="indice"]').value,10);
+            const delta = parseInt(f.querySelector('input[name="delta"]').value,10);
+            actualizarLocalStorageAccion('cantidad', indice, delta);
+        });
+    });
+    // Interceptar formularios de eliminar
+    document.querySelectorAll('form[action="'+ '{{ url_for('eliminar_item') }}' +'"]').forEach(f=>{
+        f.addEventListener('submit', function(){
+            const indice = parseInt(f.querySelector('input[name="indice"]').value,10);
+            actualizarLocalStorageAccion('eliminar', indice, 0);
+        });
+    });
+    // Interceptar vaciar carrito
+    const formLimpiar = document.querySelector('form[action="'+ '{{ url_for('limpiar_carrito') }}' +'"]');
+    if(formLimpiar){
+        formLimpiar.addEventListener('submit', function(){
+            actualizarLocalStorageAccion('limpiar', -1, 0);
+        });
+    }
+});
+</script>
+{% endblock %}

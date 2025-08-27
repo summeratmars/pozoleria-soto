@@ -1,0 +1,460 @@
+{% extends "base_mobile.html" %}
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="consulta-header text-center mb-4">
+        <div class="search-icon mb-3">
+            <i class="fas fa-search-plus"></i>
+        </div>
+        <h1 class="h3 text-primary">Consultar Pedido</h1>
+        <p class="text-muted">Ingresa tu número de pedido para conocer su estado</p>
+    </div>
+    
+    <!-- Formulario de consulta -->
+    <div class="card consulta-form mb-4">
+        <div class="card-body">
+            <form method="POST" id="consultaForm">
+                <div class="mb-3">
+                    <label for="numero_pedido" class="form-label">
+                        <i class="fas fa-receipt me-2"></i>Número de Pedido
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-hashtag"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control form-control-lg" 
+                               id="numero_pedido" 
+                               name="numero_pedido" 
+                               placeholder="Ej: PZ001234"
+                               value="{{ request.form.numero_pedido if request.form.numero_pedido }}"
+                               required>
+                    </div>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        El número aparece en tu confirmación de pedido
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search me-2"></i>Buscar Pedido
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Resultado de la consulta -->
+    {% if pedido %}
+    <div class="pedido-resultado">
+        <!-- Estado del pedido -->
+        {% set estado_raw = pedido.estado|lower|trim %}
+        {% set estado_sin_acentos = estado_raw.replace('á','a').replace('é','e').replace('í','i').replace('ó','o').replace('ú','u').replace('ü','u') %}
+        {% set estado_clean = estado_sin_acentos.replace(' ', '_') %}
+        {% if 'cancel' in estado_clean or 'anula' in estado_clean or 'rechaz' in estado_clean %}
+            {% set estado_norm = 'cancelado' %}
+        {% elif 'pend' in estado_clean %}
+            {% set estado_norm = 'pendiente' %}
+        {% elif 'recib' in estado_clean or 'confirm' in estado_clean %}
+            {% set estado_norm = 'recibido' %}
+        {% elif 'prepar' in estado_clean or 'cocin' in estado_clean %}
+            {% set estado_norm = 'preparando' %}
+        {% elif 'camino' in estado_clean or 'repart' in estado_clean or 'envio' in estado_clean %}
+            {% set estado_norm = 'en_camino' %}
+        {% elif 'entreg' in estado_clean or 'final' in estado_clean or 'complet' in estado_clean %}
+            {% set estado_norm = 'entregado' %}
+        {% else %}
+            {% set estado_norm = estado_clean %}
+        {% endif %}
+        {% if estado_norm != 'cancelado' %}
+            {% set pasos_linea = ['recibido','preparando','en_camino','entregado'] %}
+            {% if estado_norm == 'pendiente' %}
+                {% set progress_index = 1 %}
+            {% elif estado_norm in pasos_linea %}
+                {% set progress_index = pasos_linea.index(estado_norm) + 1 %}
+            {% else %}
+                {% set progress_index = 1 %}
+            {% endif %}
+            {% set pasos = [
+                {'key':'recibido','icon':'check-circle','titulo':'Pedido Recibido','desc':'Pedido confirmado','pos':1},
+                {'key':'preparando','icon':'utensils','titulo':'En Preparación','desc':'Estamos preparando tu pozole','pos':2},
+                {'key':'en_camino','icon':'motorcycle','titulo':'En Camino','desc':'Siendo entregado','pos':3},
+                {'key':'entregado','icon':'home','titulo':'Entregado','desc':'¡Disfruta tu pozole!','pos':4}
+            ] %}
+        {% endif %}
+        <div class="card estado-card mb-4">
+            <div class="card-header {% if estado_norm == 'cancelado' %}bg-danger{% elif estado_norm == 'entregado' %}bg-success{% elif estado_norm == 'en_camino' %}bg-warning{% elif estado_norm == 'preparando' %}bg-info{% else %}bg-secondary{% endif %} text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if estado_norm == 'cancelado' %}times-circle{% elif estado_norm == 'entregado' %}check-circle{% elif estado_norm == 'en_camino' %}motorcycle{% elif estado_norm == 'preparando' %}utensils{% else %}clock{% endif %} me-2"></i>
+                    Estado: {{ estado_norm.replace('_',' ')|title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if estado_norm == 'cancelado' %}
+                <div class="cancelado-wrapper text-center py-3">
+                    <div class="cancel-icon mb-3">
+                        <span class="pulse-ring"></span>
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h4 class="text-danger fw-bold mb-2">Pedido Cancelado</h4>
+                    <p class="text-muted small mb-3">Este pedido ya no seguirá su flujo normal. Posibles razones:</p>
+                    <ul class="list-unstyled text-start small razones-cancelacion mx-auto mb-3" style="max-width:320px;">
+                        <li><i class="fas fa-user-slash text-danger me-2"></i>Cancelado por el cliente</li>
+                        <li><i class="fas fa-phone-slash text-danger me-2"></i>No se logró confirmar</li>
+                        <li><i class="fas fa-box-open text-danger me-2"></i>Producto sin stock</li>
+                        <li><i class="fas fa-clock text-danger me-2"></i>Fuera de horario</li>
+                    </ul>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('catalogo') }}" class="btn btn-outline-danger btn-sm"><i class="fas fa-redo me-1"></i>Nuevo Pedido</a>
+                        <a href="https://wa.me/525575251742?text=Hola, quisiera saber por qué se canceló mi pedido {{ pedido.numero_pedido }}" target="_blank" class="btn btn-success btn-sm"><i class="fab fa-whatsapp me-1"></i>Contactar</a>
+                    </div>
+                </div>
+                <div class="alert alert-danger text-center p-2 mb-0 small">Línea de progreso desactivada para pedidos cancelados.</div>
+                {% else %}
+                <div class="estado-timeline">
+                    {% for paso in pasos %}
+                        {% set estado_step = 'completed' if progress_index > paso.pos else ('current' if progress_index == paso.pos and estado_norm != 'pendiente' else ('completed' if progress_index == paso.pos else 'upcoming')) %}
+                        <div class="timeline-step {% if estado_step == 'completed' %}completed{% elif estado_step == 'current' %}current{% endif %}" data-step="{{ paso.pos }}" data-state="{{ estado_step }}">
+                            <div class="step-icon">
+                                <i class="fas fa-{{ paso.icon }}"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>{{ paso.titulo }}</h6>
+                                <small>{{ paso.desc }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Información del pedido -->
+        <div class="card info-pedido mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información del Pedido
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Número:</strong>
+                        <span class="numero-badge">{{ pedido.numero_pedido }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Fecha:</strong>
+                        <span>{{ pedido.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Total:</strong>
+                        <span class="precio-total">${{ "%.2f"|format(pedido.total) }}</span>
+                    </div>
+                    
+                    {% if pedido.sucursal %}
+                    <div class="info-item">
+                        <strong>Sucursal:</strong>
+                        <span>{{ pedido.sucursal.nombre }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dirección de entrega -->
+        {% if pedido.direccion_entrega %}
+        <div class="card direccion-card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>Dirección de Entrega
+                </h6>
+            </div>
+            <div class="card-body">
+                <address class="mb-0">
+                    {{ pedido.direccion_entrega }}<br>
+                    {% if pedido.referencias_entrega %}
+                    <small class="text-muted">
+                        <i class="fas fa-sticky-note me-1"></i>
+                        Referencias: {{ pedido.referencias_entrega }}
+                    </small>
+                    {% endif %}
+                </address>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Productos del pedido -->
+        {% if pedido.items %}
+        <div class="card productos-card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Productos ({{ pedido.items|length }})
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="productos-list">
+                    {% for item in pedido.items %}
+                    <div class="producto-item">
+                        <div class="producto-info">
+                            <h6 class="producto-nombre">{{ item.menu_item.nombre }}</h6>
+                            <div class="producto-detalles">
+                                <span class="cantidad">Cantidad: {{ item.cantidad }}</span>
+                                <span class="precio">${{ "%.2f"|format(item.precio_unitario) }} c/u</span>
+                            </div>
+                            {% if item.opciones_personalizadas %}
+                            <div class="opciones-seleccionadas">
+                                <small class="text-muted">
+                                    <i class="fas fa-cog me-1"></i>
+                                    {{ item.opciones_personalizadas }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="producto-total">
+                            ${{ "%.2f"|format(item.precio_total) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Contacto -->
+        <div class="card contacto-card">
+            <div class="card-body text-center">
+                <h6 class="card-title">
+                    <i class="fas fa-headset me-2"></i>¿Necesitas ayuda?
+                </h6>
+                <p class="card-text small mb-3">
+                    Si tienes alguna pregunta sobre tu pedido, contáctanos
+                </p>
+                <div class="contact-buttons">
+                    <a href="https://wa.me/525575251742?text=Hola, tengo una pregunta sobre mi pedido {{ pedido.numero_pedido }}" 
+                       target="_blank" 
+                       class="btn btn-success btn-sm">
+                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                    </a>
+                    <a href="tel:5575251742" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-phone me-1"></i>Llamar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% elif request.method == 'POST' %}
+    <!-- Pedido no encontrado -->
+    <div class="alert alert-warning">
+        <h6><i class="fas fa-exclamation-triangle me-2"></i>Pedido no encontrado</h6>
+        <p class="mb-0">
+            No se encontró ningún pedido con el número <strong>{{ request.form.numero_pedido }}</strong>.
+            Verifica que el número sea correcto.
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- Botones de navegación -->
+    <div class="navigation-buttons mt-4">
+        <a href="{{ url_for('catalogo') }}" class="btn btn-primary w-100 mb-3">
+            <i class="fas fa-utensils me-2"></i>Hacer Nuevo Pedido
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
+            <i class="fas fa-home me-2"></i>Volver al Inicio
+        </a>
+    </div>
+</div>
+
+<style>
+/* Estilos específicos para consulta de pedido móvil */
+.search-icon {
+    font-size: 3rem;
+    color: var(--pozoleria-orange);
+}
+
+.consulta-form, .estado-card, .info-pedido, .direccion-card, .productos-card, .contacto-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+}
+
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+    background: #f8f9fa;
+}
+
+.form-control-lg {
+    border-radius: 0 10px 10px 0;
+    padding: 12px;
+}
+
+.estado-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.timeline-step {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.timeline-step.completed {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid #28a745;
+}
+
+.timeline-step.current {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+    animation: pulseStep 2s ease-in-out infinite;
+}
+
+@keyframes pulseStep {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.step-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 0.9rem;
+}
+
+.timeline-step.completed .step-icon {
+    background: #28a745;
+    color: white;
+}
+
+.timeline-step.current .step-icon {
+    background: #ffc107;
+    color: #212529;
+}
+
+/* Refuerzo colores texto */
+.timeline-step.completed h6, .timeline-step.completed small { color:#28a745 !important; }
+.timeline-step.current h6 { color:#d39e00 !important; }
+.timeline-step.current small { color:#b38400 !important; }
+
+.timeline-step .step-icon {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.step-content h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.step-content small {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.info-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.numero-badge {
+    font-family: 'Courier New', monospace;
+    background: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.precio-total {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #28a745;
+}
+
+.productos-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.producto-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.producto-item:last-child {
+    border-bottom: none;
+}
+
+.producto-nombre {
+    margin: 0 0 5px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.producto-detalles {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.opciones-seleccionadas {
+    margin-top: 5px;
+}
+
+.producto-total {
+    font-weight: 700;
+    color: #28a745;
+    font-size: 0.95rem;
+}
+
+.contact-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.contact-buttons .btn {
+    flex: 1;
+}
+
+.navigation-buttons .btn {
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 600;
+}
+/* Cancelado estilos */
+.cancelado-wrapper .cancel-icon {position:relative;font-size:3.2rem;color:#dc3545;}
+.cancelado-wrapper .cancel-icon .pulse-ring {position:absolute;top:50%;left:50%;width:90px;height:90px;transform:translate(-50%,-50%);border:5px solid rgba(220,53,69,.35);border-radius:50%;animation:pulseCancelMob 2.2s ease-in-out infinite;}
+@keyframes pulseCancelMob {0%{transform:translate(-50%,-50%) scale(.8);opacity:.9}70%{transform:translate(-50%,-50%) scale(1.15);opacity:0}100%{opacity:0}}
+.razones-cancelacion li {margin-bottom:4px;}
+</style>
+{% endblock %}

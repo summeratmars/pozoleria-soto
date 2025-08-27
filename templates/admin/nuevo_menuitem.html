@@ -1,0 +1,355 @@
+{# Parcial: nuevo_menuitem (sin extends) #}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-plus-circle me-2" style="color: var(--pozoleria-orange);"></i>
+                Nuevo Producto
+            </h1>
+            <p class="text-muted mb-0">Agrega un nuevo producto al menú del restaurante</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.listar_menu') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Menú
+            </a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <!-- Información Básica -->
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                            <i class="fas fa-info-circle me-2"></i>Información Básica
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Nombre del Producto *</label>
+                                    <input class="form-control" type="text" name="nombre" 
+                                           placeholder="Ej: Pozole Rojo Grande" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Precio *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input class="form-control" type="number" step="0.01" name="precio" 
+                                               placeholder="0.00" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold">Descripción *</label>
+                            <textarea class="form-control" name="descripcion" rows="3" 
+                                      placeholder="Describe el producto, ingredientes, características especiales..." required></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold">Categoría *</label>
+                            <select class="form-control" name="categoria_id" required>
+                                <option value="">Selecciona una categoría</option>
+                                {% for c in categorias %}
+                                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Si no existe la categoría, puedes <a href="{{ url_for('admin.nueva_categoria') }}" target="_blank">crear una nueva aquí</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagen del Producto -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                            <i class="fas fa-image me-2"></i>Imagen del Producto
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label font-weight-bold">Subir Imagen</label>
+                                <input class="form-control" type="file" name="imagen" accept="image/*" id="imagenFile">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Formatos: JPG, PNG, GIF. Tamaño máximo: 2MB
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-weight-bold">O usar URL de imagen</label>
+                                <input class="form-control" type="url" name="imagen_url" 
+                                       placeholder="https://ejemplo.com/imagen.jpg" id="imagenUrl">
+                                <div class="form-text">
+                                    <i class="fas fa-link me-1"></i>
+                                    URL directa a una imagen en línea
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div id="preview-container" class="text-center" style="display: none;">
+                                    <img id="image-preview" src="" alt="Vista previa" 
+                                         class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones Personalizadas -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                            <i class="fas fa-cogs me-2"></i>Opciones Personalizadas
+                        </h6>
+                        <button type="button" class="btn btn-success btn-sm" onclick="agregarOpcionPersonalizada()">
+                            <i class="fas fa-plus me-1"></i>Agregar Opción
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tip:</strong> Las opciones personalizadas permiten que los clientes customicen el producto 
+                            (ej: tamaño, ingredientes extra, preparación, etc.)
+                        </div>
+                        <div id="opciones-personalizadas">
+                            <!-- Las opciones se agregarán dinámicamente aquí -->
+                        </div>
+                        <div class="mt-3">
+                            <div class="alert alert-light border" role="alert">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-info-circle me-2"></i>Ejemplos de Opciones Personalizadas:
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Tamaño:</strong>
+                                        <ul class="small mb-0">
+                                            <li>Chico|0</li>
+                                            <li>Mediano|15</li>
+                                            <li>Grande|30</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Extras:</strong>
+                                        <ul class="small mb-0">
+                                            <li>Aguacate|10</li>
+                                            <li>Queso extra|15</li>
+                                            <li>Sin picante|0</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Lateral -->
+            <div class="col-lg-4">
+                <!-- Disponibilidad por Sucursal -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                            <i class="fas fa-store me-2"></i>Disponibilidad por Sucursal
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {% if sucursales %}
+                            {% for s in sucursales %}
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="disponible_{{ s.id }}" 
+                                           id="disponible_{{ s.id }}" checked>
+                                    <label class="form-check-label" for="disponible_{{ s.id }}">
+                                        <strong>{{ s.nombre }}</strong>
+                                        <br><small class="text-muted">{{ s.direccion }}</small>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No hay sucursales registradas. 
+                                <a href="{{ url_for('admin.nueva_sucursal') }}">Crear una sucursal</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Resumen -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                            <i class="fas fa-clipboard-check me-2"></i>Resumen
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-right">
+                                    <div class="h5 mb-0" id="sucursales-count">{{ sucursales|length }}</div>
+                                    <div class="text-muted small">Sucursales</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="h5 mb-0" id="opciones-count">0</div>
+                                <div class="text-muted small">Opciones</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-lg" type="submit">
+                                <i class="fas fa-save me-2"></i>Guardar Producto
+                            </button>
+                            <a href="{{ url_for('admin.listar_menu') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección nuevo_menuitem.html) #}
+
+<script>
+let opcionesCount = 0;
+
+// Preview de imagen
+document.getElementById('imagenFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            showImagePreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('imagenUrl').addEventListener('input', function(e) {
+    if (e.target.value) {
+        showImagePreview(e.target.value);
+    }
+});
+
+function showImagePreview(src) {
+    const preview = document.getElementById('image-preview');
+    const container = document.getElementById('preview-container');
+    
+    preview.src = src;
+    container.style.display = 'block';
+}
+
+function agregarOpcionPersonalizada() {
+    opcionesCount++;
+    const container = document.getElementById('opciones-personalizadas');
+    const opcionDiv = document.createElement('div');
+    opcionDiv.className = 'opcion-card p-3 mb-3';
+    opcionDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Opción ${opcionesCount}</h6>
+            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarOpcion(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-6">
+                <label class="form-label small">Título de la opción</label>
+                <input class="form-control form-control-sm" type="text" name="opcion_titulo" 
+                       placeholder="Ej: Tamaño, Ingredientes extra">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tipo</label>
+                <select class="form-control form-control-sm" name="opcion_tipo">
+                    <option value="radio">Selección única</option>
+                    <option value="checkbox">Múltiple selección</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Configuración</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="opcion_obligatorio_${opcionesCount - 1}">
+                    <label class="form-check-label small">Obligatorio</label>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label small">
+                    <i class="fas fa-list me-1"></i>Valores y Precios
+                    <span class="badge bg-info ms-2">Formato: nombre|precio</span>
+                </label>
+                <textarea class="form-control form-control-sm" name="opcion_valores" rows="4" 
+                          placeholder="Ejemplos:&#10;Chico|0&#10;Mediano|15&#10;Grande|30&#10;&#10;O para extras:&#10;Aguacate|10&#10;Queso extra|15&#10;Sin picante|0"></textarea>
+                <div class="form-text">
+                    <i class="fas fa-dollar-sign me-1 text-success"></i>
+                    <strong>Escriba cada opción en una línea:</strong> texto|precio (precio 0 = gratis)
+                    <br>
+                    <i class="fas fa-lightbulb me-1 text-warning"></i>
+                    Si no pones precio, será gratis automáticamente
+                </div>
+                <div class="mt-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="agregarEjemplo(this, 'tamano')">
+                        <i class="fas fa-plus me-1"></i>Ejemplo: Tamaños
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm ms-1" onclick="agregarEjemplo(this, 'extras')">
+                        <i class="fas fa-plus me-1"></i>Ejemplo: Extras
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm ms-1" onclick="agregarEjemplo(this, 'preparacion')">
+                        <i class="fas fa-plus me-1"></i>Ejemplo: Preparación
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(opcionDiv);
+    actualizarContadorOpciones();
+}
+
+function agregarEjemplo(button, tipo) {
+    const textarea = button.closest('.opcion-card').querySelector('textarea[name="opcion_valores"]');
+    const tituloInput = button.closest('.opcion-card').querySelector('input[name="opcion_titulo"]');
+    
+    let ejemplos = '';
+    let titulo = '';
+    
+    switch(tipo) {
+        case 'tamano':
+            titulo = 'Tamaño';
+            ejemplos = 'Chico|0\nMediano|15\nGrande|30';
+            break;
+        case 'extras':
+            titulo = 'Ingredientes Extra';
+            ejemplos = 'Aguacate|10\nQueso extra|15\nChile extra|5\nLimón extra|0';
+            break;
+        case 'preparacion':
+            titulo = 'Preparación';
+            ejemplos = 'Normal|0\nSin picante|0\nExtra picante|0\nSin cebolla|0';
+            break;
+    }
+    
+    if (tituloInput.value === '') {
+        tituloInput.value = titulo;
+    }
+    textarea.value = ejemplos;
+}
+
+function eliminarOpcion(button) {
+    button.closest('.opcion-card').remove();
+    actualizarContadorOpciones();
+}
+
+function actualizarContadorOpciones() {
+    const count = document.querySelectorAll('.opcion-card').length;
+    document.getElementById('opciones-count').textContent = count;
+}
+</script>

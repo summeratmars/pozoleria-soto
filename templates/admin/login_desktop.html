@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - Pozolería Soto</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">
+</head>
+<body>
+    <div class="admin-login-desktop">
+        <!-- Animated Background -->
+        <div class="login-bg-animation">
+            <div class="floating-shape"></div>
+            <div class="floating-shape"></div>
+            <div class="floating-shape"></div>
+            <div class="floating-shape"></div>
+        </div>
+        
+        <!-- Left Panel - Brand Info -->
+        <div class="login-info-panel">
+            <div class="brand-logo-desktop">
+                <i class="fas fa-utensils"></i>
+            </div>
+            
+            <h1 class="brand-title">Pozolería Soto</h1>
+            <p class="brand-subtitle">
+                Sistema de Administración Completo<br>
+                Gestiona tu negocio de manera eficiente
+            </p>
+            
+            <ul class="features-list">
+                <li>
+                    <i class="fas fa-shopping-cart"></i>
+                    Gestión de Pedidos en Tiempo Real
+                </li>
+                <li>
+                    <i class="fas fa-utensils"></i>
+                    Control Total del Menú
+                </li>
+                <li>
+                    <i class="fas fa-store"></i>
+                    Administración Multi-Sucursal
+                </li>
+                <li>
+                    <i class="fas fa-chart-bar"></i>
+                    Reportes y Estadísticas
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Right Panel - Login Form -->
+        <div class="login-form-panel">
+            <div class="login-form-container">
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner-desktop"></div>
+                </div>
+                
+                <div class="login-form-header">
+                    <h2 class="login-form-title">
+                        <i class="fas fa-shield-alt me-3" style="color: var(--pozoleria-orange);"></i>
+                        Panel Admin
+                    </h2>
+                    <p class="login-form-subtitle">Ingresa tus credenciales para continuar</p>
+                </div>
+                
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert-desktop alert-danger-desktop">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+                
+                <form method="POST" id="loginFormDesktop">
+                    <div class="form-group-desktop">
+                        <label class="form-label-desktop" for="username">Usuario</label>
+                        <div style="position: relative;">
+                            <input type="text" 
+                                   class="form-control-desktop" 
+                                   id="username"
+                                   name="username" 
+                                   placeholder="Ingresa tu usuario"
+                                   required>
+                            <i class="fas fa-user form-icon-desktop"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-desktop">
+                        <label class="form-label-desktop" for="password">Contraseña</label>
+                        <div style="position: relative;">
+                            <input type="password" 
+                                   class="form-control-desktop" 
+                                   id="password"
+                                   name="password" 
+                                   placeholder="Ingresa tu contraseña"
+                                   required>
+                            <i class="fas fa-lock form-icon-desktop"></i>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login-desktop" id="loginBtnDesktop">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Iniciar Sesión
+                    </button>
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            ¿Olvidaste tu contraseña? Contacta al administrador
+                        </small>
+                    </div>
+                </form>
+                
+                <div class="login-footer">
+                    <p class="mb-0">
+                        © 2025 Pozolería Soto<br>
+                        <small>Panel de Administración - Versión Desktop</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.getElementById('loginFormDesktop').addEventListener('submit', function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const btn = document.getElementById('loginBtnDesktop');
+            
+            loadingOverlay.style.display = 'flex';
+            btn.disabled = true;
+            
+            // Re-habilitar después de un tiempo si hay error
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                btn.disabled = false;
+            }, 8000);
+        });
+        
+        // Animaciones de entrada para los inputs
+        document.querySelectorAll('.form-control-desktop').forEach((input, index) => {
+            input.style.animationDelay = `${0.3 + index * 0.1}s`;
+            input.style.animation = 'slideInRight 0.6s ease-out forwards';
+            
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+        
+        // Efecto de particulas en el mouse
+        document.addEventListener('mousemove', function(e) {
+            const cursor = document.createElement('div');
+            cursor.style.position = 'fixed';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursor.style.width = '6px';
+            cursor.style.height = '6px';
+            cursor.style.background = 'rgba(233, 124, 26, 0.6)';
+            cursor.style.borderRadius = '50%';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.zIndex = '999';
+            cursor.style.animation = 'fadeOut 1s ease-out forwards';
+            
+            document.body.appendChild(cursor);
+            
+            setTimeout(() => {
+                cursor.remove();
+            }, 1000);
+        });
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                0% { opacity: 1; transform: scale(1); }
+                100% { opacity: 0; transform: scale(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

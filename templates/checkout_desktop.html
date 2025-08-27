@@ -1,0 +1,420 @@
+{% extends "base_desktop.html" %}
+{% block content %}
+<div class="container py-5">
+    <!-- Header del Checkout -->
+    <div class="checkout-header text-center mb-5">
+        <h1 class="display-4">Finalizar Pedido</h1>
+        <p class="lead text-muted">Revisa tu pedido y completa la información para confirmar</p>
+        <div class="decorative-line mx-auto"></div>
+    </div>
+
+    {% if productos %}
+        <div class="row">
+            <!-- Formulario de información -->
+            <div class="col-lg-8">
+                <form method="POST" id="checkoutFormDesktop">
+                    <!-- Información personal -->
+                    <div class="card info-section mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fas fa-user me-2"></i>Información Personal</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="nombre" class="form-label">Nombre Completo *</label>
+                                    <input type="text" class="form-control form-control-lg" id="nombre" name="nombre" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="telefono" class="form-label">Teléfono *</label>
+                                    <input type="tel" class="form-control form-control-lg" id="telefono" name="telefono" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dirección de entrega -->
+                    <div class="card direccion-section mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Dirección de Entrega</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label for="calle" class="form-label">Calle *</label>
+                                    <input type="text" class="form-control" id="calle" name="calle" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="numero" class="form-label">Número *</label>
+                                    <input type="text" class="form-control" id="numero" name="numero" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="colonia" class="form-label">Colonia *</label>
+                                    <input type="text" class="form-control" id="colonia" name="colonia" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="entre_calles" class="form-label">Entre qué calles *</label>
+                                    <input type="text" class="form-control" id="entre_calles" name="entre_calles" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="referencia" class="form-label">Referencias adicionales *</label>
+                                    <textarea class="form-control" id="referencia" name="referencia" rows="3" required 
+                                              placeholder="Proporciona referencias detalladas para facilitar la entrega (color de casa, puntos de referencia, etc.)"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selección de sucursal -->
+                    <div class="card sucursal-section mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="fas fa-store me-2"></i>Sucursal de Preparación</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% for sucursal in sucursales %}
+                                <div class="col-md-6">
+                                    <div class="form-check sucursal-option">
+                                        <input class="form-check-input" type="radio" name="sucursal_id" 
+                                               id="sucursal{{ sucursal.id }}" value="{{ sucursal.id }}"
+                                               {% if sucursal_actual and sucursal.id == sucursal_actual.id %}checked{% endif %}
+                                               {% if not sucursal.abierta_ahora %}disabled{% endif %} required>
+                                        <label class="form-check-label w-100" for="sucursal{{ sucursal.id }}">
+                                            <div class="sucursal-card">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="mb-0">{{ sucursal.nombre }}</h6>
+                                                    <span class="badge {% if sucursal.abierta_ahora %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {% if sucursal.abierta_ahora %}Abierto{% else %}Cerrado{% endif %}
+                                                    </span>
+                                                </div>
+                                                <p class="small text-muted mb-1">{{ sucursal.direccion }}</p>
+                                                <p class="small text-muted mb-0">{{ sucursal.telefono }}</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Forma de pago -->
+                    <div class="card pago-section mb-4">
+                        <div class="card-header bg-dark text-white">
+                            <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Método de Pago</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check pago-option">
+                                        <input class="form-check-input" type="radio" name="forma_pago" id="efectivo" value="efectivo" required>
+                                        <label class="form-check-label w-100" for="efectivo">
+                                            <div class="pago-card">
+                                                <i class="fas fa-money-bill fa-2x text-success mb-2"></i>
+                                                <h6>Pago en Efectivo</h6>
+                                                <p class="small text-muted mb-0">Paga al recibir tu pedido</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check pago-option">
+                                        <input class="form-check-input" type="radio" name="forma_pago" id="transferencia" value="transferencia" required>
+                                        <label class="form-check-label w-100" for="transferencia">
+                                            <div class="pago-card">
+                                                <i class="fas fa-university fa-2x text-primary mb-2"></i>
+                                                <h6>Transferencia Bancaria</h6>
+                                                <p class="small text-muted mb-0">Transfiere antes de la entrega</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Opciones adicionales de pago -->
+                            <div class="pago-detalles mt-4">
+                                <!-- Campo de cambio para efectivo -->
+                                <div id="cambio-section" class="d-none">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle me-2"></i>Cambio requerido</h6>
+                                        <div class="row g-2">
+                                            <div class="col-md-6">
+                                                <label for="cambio_para" class="form-label">¿Para cuánto necesitas cambio?</label>
+                                                <input type="number" class="form-control" id="cambio_para" name="cambio_para" 
+                                                       step="0.01" min="{{ total }}" placeholder="Ej: {{ (total + 50)|round|int }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información de transferencia -->
+                                <div id="transferencia-section" class="d-none">
+                                    <div class="alert alert-primary">
+                                        <h6><i class="fas fa-university me-2"></i>Datos para Transferencia</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <strong>Banco:</strong> BANAMEX<br>
+                                                <strong>Titular:</strong> EFREN UZIEL SOTO JAIMES<br>
+                                                <strong>Tarjeta:</strong> 5204 1662 0566 9791
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Concepto:</strong> Pedido Pozolería Soto<br>
+                                                <strong>Monto:</strong> ${{ "%.2f"|format(total) }}
+                                            </div>
+                                        </div>
+                                        <div class="small text-muted mt-2">Envía captura de la transferencia si es posible para agilizar la confirmación.</div>
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" id="confirmo_transferencia" name="confirmo_transferencia">
+                                            <label class="form-check-label" for="confirmo_transferencia">
+                                                <strong>Confirmo que realizaré la transferencia antes de que llegue mi pedido</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="acciones-checkout">
+                        <input type="hidden" name="total" value="{{ total }}">
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('carrito') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Regresar al Carrito
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="fas fa-check me-2"></i>Confirmar Pedido
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Resumen del pedido (sidebar) -->
+            <div class="col-lg-4">
+                <div class="card resumen-pedido sticky-top" style="top: 100px;">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="pedidos-lista mb-4">
+                            {% for item in productos %}
+                            <div class="pedido-item d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="item-image me-3">
+                                    {% if item.producto.imagen %}
+                                        <img src="{{ url_for('static', filename='uploads/' + item.producto.imagen) }}" 
+                                             class="rounded" 
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 60px; height: 60px;">
+                                            <i class="fas fa-utensils text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="item-details flex-grow-1">
+                                    <h6 class="mb-1">{{ item.producto.nombre }}</h6>
+                                    <p class="small text-muted mb-1">Cantidad: {{ item.cantidad }}</p>
+                                    {% if item.opciones_info %}
+                                        <div class="opciones-desktop mb-2">
+                                            {% for opcion in item.opciones_info %}
+                                                <span class="badge bg-light text-dark small">{{ opcion }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <strong class="text-success">${{ "%.2f"|format(item.subtotal) }}</strong>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="total-section">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span>${{ "%.2f"|format(total) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Entrega:</span>
+                                <span class="text-success">Gratis</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Total:</h5>
+                                <h4 class="mb-0 text-success">${{ "%.2f"|format(total) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Sin productos -->
+        <div class="sin-productos text-center py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <i class="fas fa-shopping-cart fa-6x text-muted mb-4"></i>
+                    <h2 class="text-muted mb-3">No hay productos en tu carrito</h2>
+                    <p class="text-muted mb-4">Agrega algunos productos antes de proceder al checkout</p>
+                    <a href="{{ url_for('catalogo') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-utensils me-2"></i>Explorar Catálogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejo de forma de pago
+    const efectivoRadio = document.getElementById('efectivo');
+    const transferenciaRadio = document.getElementById('transferencia');
+    const cambioSection = document.getElementById('cambio-section');
+    const transferenciaSection = document.getElementById('transferencia-section');
+    
+    if (efectivoRadio) {
+        efectivoRadio.addEventListener('change', function() {
+            if (this.checked) {
+                cambioSection.classList.remove('d-none');
+                transferenciaSection.classList.add('d-none');
+            }
+        });
+    }
+    
+    if (transferenciaRadio) {
+        transferenciaRadio.addEventListener('change', function() {
+            if (this.checked) {
+                transferenciaSection.classList.remove('d-none');
+                cambioSection.classList.add('d-none');
+            }
+        });
+    }
+    
+    // Validación del formulario
+    const form = document.getElementById('checkoutFormDesktop');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const transferenciaChecked = transferenciaRadio && transferenciaRadio.checked;
+            const confirmoTransferencia = document.getElementById('confirmo_transferencia');
+            
+            if (transferenciaChecked && confirmoTransferencia && !confirmoTransferencia.checked) {
+                e.preventDefault();
+                alert('Debes confirmar que realizarás la transferencia bancaria.');
+                return false;
+            }
+        });
+    }
+    
+    // Animaciones para las opciones
+    document.querySelectorAll('.sucursal-option input[type="radio"], .pago-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Remover selección de hermanos
+            const name = this.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                r.closest('.form-check').querySelector('.sucursal-card, .pago-card').classList.remove('selected');
+            });
+            
+            // Agregar selección al actual
+            if (this.checked) {
+                const card = this.closest('.form-check').querySelector('.sucursal-card, .pago-card');
+                if (card) {
+                    card.classList.add('selected');
+                }
+            }
+        });
+    });
+});
+</script>
+
+<style>
+/* Estilos específicos para checkout escritorio */
+.info-section, .direccion-section, .sucursal-section, .pago-section {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.info-section:hover, .direccion-section:hover, .sucursal-section:hover, .pago-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--pozoleria-orange);
+    box-shadow: 0 0 0 0.2rem rgba(233, 124, 26, 0.25);
+}
+
+.sucursal-card, .pago-card {
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.sucursal-card:hover, .pago-card:hover {
+    border-color: var(--pozoleria-orange);
+    background-color: rgba(233, 124, 26, 0.05);
+}
+
+.sucursal-card.selected, .pago-card.selected {
+    border-color: var(--pozoleria-orange);
+    background-color: rgba(233, 124, 26, 0.1);
+    transform: scale(1.02);
+}
+
+.resumen-pedido {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.pedido-item {
+    transition: all 0.3s ease;
+}
+
+.pedido-item:hover {
+    background-color: rgba(0,0,0,0.02);
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+}
+
+.opciones-desktop .badge {
+    margin: 2px;
+}
+
+.acciones-checkout button {
+    border-radius: 12px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.acciones-checkout button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.pago-detalles .alert {
+    border-radius: 12px;
+}
+
+.form-check-input {
+    transform: scale(1.2);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+</style>
+{% endblock %}

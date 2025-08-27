@@ -1,0 +1,803 @@
+{# Parcial: listar_categorias (sin extends) #}
+<div class="container-fluid px-3 px-md-4">
+    <!-- Header Responsivo -->
+    <div class="row align-items-center mb-4">
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <h1 class="h3 mb-0 text-gray-800 d-flex align-items-center">
+                <i class="fas fa-tags me-2" style="color: var(--pozoleria-orange);"></i>
+                <span class="d-none d-sm-inline">Gestión de Categorías</span>
+                <span class="d-sm-none">Categorías</span>
+            </h1>
+            <p class="text-muted mb-0 small">Organiza los productos del restaurante</p>
+        </div>
+        <div class="col-12 col-md-4">
+            {% if session.admin_nombre %}
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="badge bg-primary px-3 py-2 d-none d-md-inline" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle me-1"></i>
+                    {{ session.admin_nombre }}
+                </span>
+                <!-- Botón nueva categoría móvil -->
+                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-sm w-100 w-md-auto">
+                    <i class="fas fa-plus me-1"></i>
+                    <span class="d-none d-sm-inline">Nueva Categoría</span>
+                    <span class="d-sm-none">Nueva</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Estadísticas Responsivas -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-success shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Total Categorías</span>
+                                <span class="d-md-none">Categorías</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ categorias_data|length }}</div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-info shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Productos Categorizados</span>
+                                <span class="d-md-none">Productos</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set productos_con_categoria = namespace(count=0) %}
+                                {% for data in categorias_data %}
+                                    {% set productos_con_categoria.count = productos_con_categoria.count + data.categoria.productos|length %}
+                                {% endfor %}
+                                {{ productos_con_categoria.count }}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-utensils fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-warning shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Promedio</span>
+                                <span class="d-md-none">Media</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if categorias|length > 0 %}
+                                    {{ "%.1f"|format(productos_con_categoria.count / categorias|length) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-calculator fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-primary shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Estado
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if categorias_data|length > 0 %}Activas{% else %}Sin datos{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista móvil: Cards de categorías -->
+    <div class="d-block d-lg-none mobile-categories-container">
+        {% if categorias_data %}
+            <!-- Filtros móvil -->
+            <div class="row mb-3">
+                <div class="col-8">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Buscar categoría..." 
+                               id="buscadorCategoria" onkeyup="buscarCategoria()">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="ordenarCategorias()">
+                        <i class="fas fa-sort me-1"></i>Ordenar
+                    </button>
+                </div>
+            </div>
+
+            {% for data in categorias_data %}
+            {% set c = data.categoria %}
+            <div class="card mb-3 category-card" data-nombre="{{ c.nombre.lower() }}">
+                <div class="card-body p-3">
+                    <!-- Header con icono y nombre -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center flex-grow-1">
+                            <div class="category-icon-container me-3">
+                                <div class="category-icon">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="category-title mb-1">{{ c.nombre }}</h6>
+                                <div class="category-id">
+                                    <span class="badge bg-secondary">#{{ c.id }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Dropdown de acciones -->
+                        <div class="dropdown">
+                            <button class="btn btn-link btn-sm p-1" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v text-muted"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('admin.editar_categoria', id=c.id) }}">
+                                        <i class="fas fa-edit me-2 text-primary"></i>Editar
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="verProductosMobile({{ c.id }}, '{{ c.nombre }}', {{ c.productos|length }})">
+                                        <i class="fas fa-eye me-2 text-info"></i>Ver productos
+                                    </a>
+                                </li>
+                                {% if c.productos|length == 0 %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" 
+                                       onclick="confirmarEliminar({{ c.id }}, '{{ c.nombre }}')">
+                                        <i class="fas fa-trash me-2"></i>Eliminar
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de productos -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="products-info">
+                                <span class="badge bg-info fs-6 px-3 py-2">
+                                    <i class="fas fa-utensils me-1"></i>
+                                    {{ c.productos|length }} productos
+                                </span>
+                                {% if c.productos|length > 0 %}
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-check-circle me-1"></i>En uso
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning ms-2">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Sin productos
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <!-- Botón de edición rápida -->
+                            <a href="{{ url_for('admin.editar_categoria', id=c.id) }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Disponibilidad por sucursales -->
+                    <div class="sucursales-availability">
+                        <h6 class="small text-muted mb-2">
+                            <i class="fas fa-store me-1"></i>Disponibilidad por sucursal
+                        </h6>
+                        <div class="availability-badges">
+                            {% set has_data = false %}
+                            {% for sucursal_nombre, stats in data.sucursales_stats.items() %}
+                                {% set has_data = true %}
+                                {% if stats.disponibles > 0 %}
+                                    <span class="badge bg-success me-1 mb-1">
+                                        <i class="fas fa-check me-1"></i>{{ sucursal_nombre }}
+                                        <span class="badge bg-light text-dark ms-1">{{ stats.disponibles }}</span>
+                                    </span>
+                                {% endif %}
+                                {% if stats.no_disponibles > 0 %}
+                                    <span class="badge bg-danger me-1 mb-1">
+                                        <i class="fas fa-times me-1"></i>{{ sucursal_nombre }}
+                                        <span class="badge bg-light text-dark ms-1">{{ stats.no_disponibles }}</span>
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if not has_data %}
+                                {% if c.productos|length == 0 %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-info-circle me-1"></i>Sin productos asignados
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Sin sucursales asignadas
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Estado vacío móvil -->
+            <div class="text-center py-5">
+                <i class="fas fa-tags" style="font-size: 4em; color: var(--pozoleria-orange); opacity: 0.5;"></i>
+                <h5 class="mt-3 text-muted">No hay categorías registradas</h5>
+                <p class="text-muted mb-4">Comienza organizando tu menú creando categorías</p>
+                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Crear Primera Categoría
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Vista escritorio: Tabla original mejorada -->
+    <div class="d-none d-lg-block">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                    <i class="fas fa-list me-2"></i>Lista de Categorías
+                </h6>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Panel Principal
+                    </a>
+                    <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nueva Categoría
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th width="10%">
+                                    <i class="fas fa-hashtag me-1"></i>ID
+                                </th>
+                                <th width="25%">
+                                    <i class="fas fa-tag me-1"></i>Nombre de Categoría
+                                </th>
+                                <th width="20%">
+                                    <i class="fas fa-utensils me-1"></i>Productos Asociados
+                                </th>
+                                <th width="25%">
+                                    <i class="fas fa-store me-1"></i>Disponibilidad por Sucursal
+                                </th>
+                                <th width="20%">
+                                    <i class="fas fa-cogs me-1"></i>Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in categorias_data %}
+                            {% set c = data.categoria %}
+                            <tr>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary px-2 py-1">#{{ c.id }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <i class="fas fa-tag text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-bold h6 mb-1">{{ c.nombre }}</div>
+                                            <div class="text-muted small">Categoría de productos</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-info fs-6 px-3 py-2 me-2">
+                                            {{ c.productos|length }} productos
+                                        </span>
+                                        {% if c.productos|length > 0 %}
+                                            <span class="text-success small">
+                                                <i class="fas fa-check-circle me-1"></i>En uso
+                                            </span>
+                                        {% else %}
+                                            <span class="text-warning small">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Sin productos
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for sucursal_nombre, stats in data.sucursales_stats.items() %}
+                                            {% if stats.disponibles > 0 %}
+                                                <span class="badge bg-success mb-1" title="{{ stats.disponibles }} productos disponibles">
+                                                    <i class="fas fa-check me-1"></i>{{ sucursal_nombre }}
+                                                    <span class="badge bg-light text-dark ms-1">{{ stats.disponibles }}</span>
+                                                </span>
+                                            {% endif %}
+                                            {% if stats.no_disponibles > 0 %}
+                                                <span class="badge bg-danger mb-1" title="{{ stats.no_disponibles }} productos no disponibles">
+                                                    <i class="fas fa-times me-1"></i>{{ sucursal_nombre }}
+                                                    <span class="badge bg-light text-dark ms-1">{{ stats.no_disponibles }}</span>
+                                                </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if c.productos|length == 0 %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-info-circle me-1"></i>Sin productos asignados
+                                            </span>
+                                        {% elif data.sucursales_stats|length == 0 %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Sin sucursales asignadas
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('admin.editar_categoria', id=c.id) }}" 
+                                           class="btn btn-primary btn-sm" title="Editar categoría">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-info btn-sm" title="Ver productos" 
+                                                onclick="verProductos({{ c.id }}, '{{ c.nombre }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if c.productos|length == 0 %}
+                                        <button class="btn btn-danger btn-sm" title="Eliminar categoría"
+                                                onclick="confirmarEliminar({{ c.id }}, '{{ c.nombre }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                                    <div class="h5">No hay categorías registradas</div>
+                                    <p class="text-muted">Comienza organizando tu menú creando categorías</p>
+                                    <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>Crear Primera Categoría
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>{# Estilos movidos a admin_pages.css (sección: listar_categorias.html) #}
+
+<script>
+// ========== FUNCIONES MEJORADAS PARA MÓVIL Y ESCRITORIO ==========
+
+// Función para buscar categorías por nombre (móvil)
+function buscarCategoria() {
+    const busqueda = document.getElementById('buscadorCategoria').value.toLowerCase();
+    const categorias = document.querySelectorAll('.category-card');
+    let visibles = 0;
+    
+    categorias.forEach((categoria, index) => {
+        const nombre = categoria.getAttribute('data-nombre');
+        const coincide = nombre.includes(busqueda);
+        
+        if (coincide) {
+            categoria.classList.remove('filtered-out');
+            categoria.style.display = '';
+            // Animación escalonada
+            setTimeout(() => {
+                categoria.style.opacity = '1';
+                categoria.style.transform = 'translateY(0)';
+            }, index * 50);
+            visibles++;
+        } else {
+            categoria.classList.add('filtered-out');
+            setTimeout(() => {
+                categoria.style.display = 'none';
+            }, 300);
+        }
+    });
+    
+    mostrarMensajeSinResultados(visibles);
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(visibles) {
+    // Remover mensaje anterior si existe
+    const mensajeAnterior = document.querySelector('.no-results-message');
+    if (mensajeAnterior) {
+        mensajeAnterior.remove();
+    }
+    
+    if (visibles === 0) {
+        const container = document.querySelector('.mobile-categories-container');
+        if (container) {
+            const mensaje = document.createElement('div');
+            mensaje.className = 'no-results-message text-center py-5';
+            mensaje.innerHTML = `
+                <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px;">
+                    <i class="fas fa-search" style="font-size: 2em; color: var(--pozoleria-orange);"></i>
+                    <h5 class="mt-3 mb-2">No se encontraron categorías</h5>
+                    <p class="mb-0 text-muted">No hay categorías que coincidan con tu búsqueda.</p>
+                    <button class="btn btn-outline-primary btn-sm mt-2" onclick="limpiarBusqueda()">
+                        <i class="fas fa-refresh me-1"></i>Limpiar búsqueda
+                    </button>
+                </div>
+            `;
+            container.appendChild(mensaje);
+            
+            // Animación de entrada
+            setTimeout(() => {
+                mensaje.style.opacity = '0';
+                mensaje.style.transform = 'translateY(20px)';
+                mensaje.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    mensaje.style.opacity = '1';
+                    mensaje.style.transform = 'translateY(0)';
+                }, 10);
+            }, 10);
+        }
+    }
+}
+
+// Función para limpiar búsqueda
+function limpiarBusqueda() {
+    const buscador = document.getElementById('buscadorCategoria');
+    if (buscador) buscador.value = '';
+    
+    // Mostrar todas las categorías
+    const categorias = document.querySelectorAll('.category-card');
+    categorias.forEach((categoria, index) => {
+        categoria.classList.remove('filtered-out');
+        categoria.style.display = '';
+        setTimeout(() => {
+            categoria.style.opacity = '1';
+            categoria.style.transform = 'translateY(0)';
+        }, index * 30);
+    });
+    
+    // Remover mensaje de sin resultados
+    const mensaje = document.querySelector('.no-results-message');
+    if (mensaje) {
+        mensaje.remove();
+    }
+}
+
+// Función para ordenar categorías
+let ordenAscendente = true;
+function ordenarCategorias() {
+    const container = document.querySelector('.mobile-categories-container');
+    const categorias = Array.from(document.querySelectorAll('.category-card'));
+    
+    categorias.sort((a, b) => {
+        const nombreA = a.getAttribute('data-nombre');
+        const nombreB = b.getAttribute('data-nombre');
+        
+        if (ordenAscendente) {
+            return nombreA.localeCompare(nombreB);
+        } else {
+            return nombreB.localeCompare(nombreA);
+        }
+    });
+    
+    // Reordenar en el DOM
+    categorias.forEach((categoria, index) => {
+        container.appendChild(categoria);
+        // Animación de reordenamiento
+        categoria.style.transform = 'translateX(-20px)';
+        categoria.style.opacity = '0.7';
+        setTimeout(() => {
+            categoria.style.transform = 'translateX(0)';
+            categoria.style.opacity = '1';
+        }, index * 50);
+    });
+    
+    ordenAscendente = !ordenAscendente;
+    
+    // Actualizar texto del botón
+    const botonOrdenar = document.querySelector('button[onclick="ordenarCategorias()"]');
+    if (botonOrdenar) {
+        const icono = ordenAscendente ? 'fa-sort-alpha-down' : 'fa-sort-alpha-up';
+        botonOrdenar.innerHTML = `<i class="fas ${icono} me-1"></i>Ordenar`;
+    }
+}
+
+// Función mejorada para ver productos en móvil
+function verProductosMobile(categoriaId, categoriaNombre, totalProductos) {
+    const modalHtml = `
+        <div class="modal fade" id="modalProductosCategoria" tabindex="-1" aria-labelledby="modalProductosCategoriaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42); border-radius: 15px 15px 0 0;">
+                        <h5 class="modal-title" id="modalProductosCategoriaLabel">
+                            <i class="fas fa-tag me-2"></i>Productos de la Categoría
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="category-detail-icon">
+                                <i class="fas fa-tag fa-3x text-primary mb-3"></i>
+                            </div>
+                            <h4 class="text-dark mb-2">${categoriaNombre}</h4>
+                            <span class="badge bg-info fs-6 px-3 py-2">${totalProductos} productos</span>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="info-card text-center p-3 bg-light rounded">
+                                    <i class="fas fa-utensils text-info mb-2"></i>
+                                    <div class="small text-muted">Total Productos</div>
+                                    <div class="fw-bold">${totalProductos}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-card text-center p-3 bg-light rounded">
+                                    <i class="fas fa-tag text-success mb-2"></i>
+                                    <div class="small text-muted">Categoría ID</div>
+                                    <div class="fw-bold">#${categoriaId}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3" style="border-radius: 10px;">
+                            <h6><i class="fas fa-info-circle me-2"></i>Acciones disponibles</h6>
+                            <ul class="mb-0 small">
+                                <li>Ver todos los productos de esta categoría</li>
+                                <li>Editar información de la categoría</li>
+                                <li>Gestionar disponibilidad por sucursal</li>
+                                <li>Organizar productos del menú</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cerrar
+                        </button>
+                        <a href="/admin/categorias/editar/${categoriaId}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Categoría
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente si hay uno
+    const modalExistente = document.getElementById('modalProductosCategoria');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+    
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalProductosCategoria'));
+    modal.show();
+    
+    // Limpiar modal después de cerrar
+    document.getElementById('modalProductosCategoria').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+
+// Función original para escritorio (mejorada)
+function verProductos(categoriaId, categoriaNombre) {
+    let mensaje = '🏷️ PRODUCTOS DE LA CATEGORÍA\n\n';
+    mensaje += '📂 Categoría: ' + categoriaNombre + '\n';
+    mensaje += '🆔 ID: #' + categoriaId + '\n\n';
+    mensaje += '📋 Esta función mostraría:\n';
+    mensaje += '• Lista completa de productos\n';
+    mensaje += '• Estado de disponibilidad por sucursal\n';
+    mensaje += '• Opciones de edición y gestión\n';
+    mensaje += '• Estadísticas de la categoría';
+    
+    alert(mensaje);
+}
+
+// Función mejorada para confirmar eliminación
+function confirmarEliminar(categoriaId, categoriaNombre) {
+    const modalHtml = `
+        <div class="modal fade" id="modalEliminarCategoria" tabindex="-1" aria-labelledby="modalEliminarCategoriaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                    <div class="modal-header bg-danger text-white" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="modal-title" id="modalEliminarCategoriaLabel">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Confirmar eliminación
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-3">
+                            <div class="delete-icon mb-3">
+                                <i class="fas fa-tags fa-4x text-danger"></i>
+                            </div>
+                            <h5 class="text-dark">¿Estás seguro de eliminar esta categoría?</h5>
+                            <p class="text-muted mb-3">
+                                <strong>"${categoriaNombre}"</strong>
+                            </p>
+                            <div class="alert alert-warning" style="border-radius: 10px;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Esta acción no se puede deshacer.</strong>
+                                <br>Solo se puede eliminar si no tiene productos asociados.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <form method="POST" action="/admin/categorias/eliminar/${categoriaId}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Eliminar categoría
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente si hay uno
+    const modalExistente = document.getElementById('modalEliminarCategoria');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+    
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalEliminarCategoria'));
+    modal.show();
+    
+    // Limpiar modal después de cerrar
+    document.getElementById('modalEliminarCategoria').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+
+// Función para animar la entrada de las cards
+function animarEntradaCards() {
+    const cards = document.querySelectorAll('.category-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+// Función para mejorar las estadísticas con efectos hover
+function mejorarEstadisticas() {
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+}
+
+// Inicialización cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar entrada de cards en móvil
+    if (window.innerWidth < 992) {
+        setTimeout(animarEntradaCards, 100);
+    }
+    
+    // Mejorar estadísticas
+    mejorarEstadisticas();
+    
+    // Agregar efectos de hover mejorados a las category cards
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 12px 35px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+        });
+    });
+    
+    // Mejorar el input de búsqueda con debounce
+    let searchTimeout;
+    const buscador = document.getElementById('buscadorCategoria');
+    if (buscador) {
+        buscador.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(buscarCategoria, 300);
+        });
+    }
+});
+
+// Función para manejar el redimensionamiento de ventana
+window.addEventListener('resize', function() {
+    // Re-animar cards si se cambia a móvil
+    if (window.innerWidth < 992) {
+        const cards = document.querySelectorAll('.category-card');
+        if (cards.length > 0 && !cards[0].style.opacity) {
+            setTimeout(animarEntradaCards, 100);
+        }
+    }
+});
+
+// Mejorar accesibilidad con teclado
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Cerrar cualquier modal abierto
+        const modalesAbiertos = document.querySelectorAll('.modal.show');
+        modalesAbiertos.forEach(modal => {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        });
+    }
+    
+    // Atajo de teclado para nueva categoría (Ctrl+N)
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        window.location.href = '{{ url_for("admin.nueva_categoria") }}';
+    }
+});
+</script>

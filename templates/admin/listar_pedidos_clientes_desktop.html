@@ -1,0 +1,404 @@
+{% extends "admin/base_admin_desktop.html" %}
+
+{% block title %}Pedidos de Clientes - Pozolería Soto{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+{% block content %}
+<div class="admin-desktop-container">
+    <!-- Header con estadísticas -->
+    <div class="admin-page-header-desktop">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="page-icon-desktop me-3">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h2 class="page-title-desktop mb-1">Gestión de Pedidos</h2>
+                        <p class="page-subtitle-desktop mb-0">Administra todos los pedidos de clientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-mini-desktop">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-warning">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ pedidos_pendientes }} Pendientes</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-success">
+                                <i class="fas fa-check"></i>
+                                <span>{{ pedidos_completados }} Completados</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros avanzados desktop -->
+    <div class="admin-filters-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="filtroEstadoDesktop">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="preparando">Preparando</option>
+                            <option value="listo">Listo</option>
+                            <option value="entregado">Entregado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sucursal</label>
+                        <select class="form-select" id="filtroSucursalDesktop">
+                            <option value="">Todas las sucursales</option>
+                            {% for sucursal in sucursales %}
+                            <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="filtroFecha">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Búsqueda</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" 
+                                   placeholder="Cliente, teléfono..." 
+                                   id="busquedaCliente">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de pedidos desktop -->
+    <div class="admin-table-desktop">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Lista de Pedidos ({{ pedidos|length }})
+                    </h5>
+                    <div class="table-actions">
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="exportarPedidos()">
+                            <i class="fas fa-download me-1"></i>Exportar
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="actualizarTabla()">
+                            <i class="fas fa-sync me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tablaPedidosDesktop">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="8%">ID</th>
+                                <th width="15%">Cliente</th>
+                                <th width="12%">Teléfono</th>
+                                <th width="15%">Fecha</th>
+                                <th width="12%">Sucursal</th>
+                                <th width="10%">Total</th>
+                                <th width="12%">Estado</th>
+                                <th width="16%">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos %}
+                            <tr class="pedido-row-desktop" 
+                                data-estado="{{ pedido.estado }}" 
+                                data-sucursal="{{ pedido.sucursal_id }}"
+                                data-fecha="{{ pedido.fecha.strftime('%Y-%m-%d') }}"
+                                data-cliente="{{ pedido.nombre.lower() }} {{ pedido.telefono }}">
+                                <td>
+                                    <span class="badge bg-light text-dark">#{{ pedido.id }}</span>
+                                </td>
+                                <td>
+                                    <div class="cliente-info-desktop">
+                                        <div class="fw-semibold">{{ pedido.nombre }}</div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ pedido.colonia }}
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="tel:{{ pedido.telefono }}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>
+                                        {{ pedido.telefono }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fecha-desktop">
+                                        <div>{{ pedido.fecha.strftime('%d/%m/%Y') }}</div>
+                                        <small class="text-muted">{{ pedido.fecha.strftime('%H:%M') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ pedido.sucursal.nombre if pedido.sucursal else 'N/A' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">${{ "%.2f"|format(pedido.total) }}</span>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm estado-select" 
+                                            onchange="cambiarEstadoDesktop({{ pedido.id }}, this.value)">
+                                        <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>
+                                            Pendiente
+                                        </option>
+                                        <option value="preparando" {% if pedido.estado == 'preparando' %}selected{% endif %}>
+                                            Preparando
+                                        </option>
+                                        <option value="listo" {% if pedido.estado == 'listo' %}selected{% endif %}>
+                                            Listo
+                                        </option>
+                                        <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>
+                                            Entregado
+                                        </option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-primary btn-sm" 
+                                                onclick="verDetallesDesktop({{ pedido.id }})"
+                                                title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" 
+                                                onclick="verDireccionDesktop({{ pedido.id }})"
+                                                title="Ver dirección">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" 
+                                                onclick="imprimirPedido({{ pedido.id }})"
+                                                title="Imprimir">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not pedidos %}
+    <div class="empty-state-desktop text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-receipt fa-5x text-muted mb-4"></i>
+                <h4 class="text-muted mb-2">No hay pedidos</h4>
+                <p class="text-muted">Los pedidos de clientes aparecerán aquí cuando se realicen</p>
+                <button class="btn btn-primary" onclick="actualizarTabla()">
+                    <i class="fas fa-sync me-2"></i>Actualizar Lista
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de detalles del pedido - Desktop -->
+<div class="modal fade" id="modalDetallesPedidoDesktop" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>
+                    Detalles del Pedido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDetallesPedidoDesktop">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="imprimirDetalles()">
+                    <i class="fas fa-print me-1"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de dirección -->
+<div class="modal fade" id="modalDireccionDesktop" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Dirección de Entrega
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDireccionDesktop">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+ </div>
+
+<script>
+// Inicializar DataTable
+$(document).ready(function() {
+    $('#tablaPedidosDesktop').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[ 3, "desc" ]], // Ordenar por fecha desc
+        "columnDefs": [
+            { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
+        ]
+    });
+});
+
+// Filtros
+document.getElementById('filtroEstadoDesktop').addEventListener('change', filtrarTablaDesktop);
+document.getElementById('filtroSucursalDesktop').addEventListener('change', filtrarTablaDesktop);
+document.getElementById('filtroFecha').addEventListener('change', filtrarTablaDesktop);
+document.getElementById('busquedaCliente').addEventListener('input', filtrarTablaDesktop);
+
+function filtrarTablaDesktop() {
+    const filtroEstado = document.getElementById('filtroEstadoDesktop').value;
+    const filtroSucursal = document.getElementById('filtroSucursalDesktop').value;
+    const filtroFecha = document.getElementById('filtroFecha').value;
+    const busqueda = document.getElementById('busquedaCliente').value.toLowerCase();
+    
+    const filas = document.querySelectorAll('.pedido-row-desktop');
+    
+    filas.forEach(fila => {
+        let mostrar = true;
+        
+        if (filtroEstado && fila.dataset.estado !== filtroEstado) {
+            mostrar = false;
+        }
+        
+        if (filtroSucursal && fila.dataset.sucursal !== filtroSucursal) {
+            mostrar = false;
+        }
+        
+        if (filtroFecha && fila.dataset.fecha !== filtroFecha) {
+            mostrar = false;
+        }
+        
+        if (busqueda && !fila.dataset.cliente.includes(busqueda)) {
+            mostrar = false;
+        }
+        
+        fila.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function cambiarEstadoDesktop(pedidoId, nuevoEstado) {
+    fetch(`/admin/pedido/${pedidoId}/estado`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: nuevoEstado })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar visualmente sin reload
+            showNotification('Estado actualizado correctamente', 'success');
+        } else {
+            showNotification('Error al actualizar el estado', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error de conexión', 'error');
+    });
+}
+
+function verDetallesDesktop(pedidoId) {
+    fetch(`/admin/pedido/${pedidoId}/detalles`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoDetallesPedidoDesktop').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalDetallesPedidoDesktop')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar los detalles', 'error');
+        });
+}
+
+function verDireccionDesktop(pedidoId) {
+    fetch(`/admin/pedido/${pedidoId}/direccion`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoDireccionDesktop').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalDireccionDesktop')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar la dirección', 'error');
+        });
+}
+
+function imprimirPedido(pedidoId) {
+    window.open(`/admin/pedido/${pedidoId}/imprimir`, '_blank');
+}
+
+function exportarPedidos() {
+    window.location.href = '/admin/pedidos/exportar';
+}
+
+function actualizarTabla() {
+    location.reload();
+}
+
+function imprimirDetalles() {
+    window.print();
+}
+
+function showNotification(message, type) {
+    // Implementar sistema de notificaciones
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alert = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alert);
+    
+    setTimeout(() => {
+        const alertElement = document.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

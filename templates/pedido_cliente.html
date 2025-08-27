@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4" style="color:var(--pozoleria-orange);">Haz tu pedido en línea</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'success' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form method="post" id="pedidoForm">
+        <div class="mb-3">
+            <label class="form-label">Nombre completo</label>
+            <input class="form-control" type="text" name="nombre" placeholder="Tu nombre" required>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input class="form-control" type="text" name="telefono" placeholder="Teléfono" required>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Dirección de entrega</label>
+            <input class="form-control" type="text" name="direccion" placeholder="Dirección de entrega" required>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Seleccionar sucursal</label>
+            <select class="form-control" name="sucursal_id" id="sucursalSelect" required>
+                <option value="">Selecciona una sucursal</option>
+                {% for s in sucursales %}
+                    <option value="{{ s.id }}" 
+                            data-abierta="{{ s.abierta_ahora|lower }}"
+                            data-activa="{{ s.activa|lower }}"
+                            data-nombre="{{ s.nombre }}"
+                            data-direccion="{{ s.direccion }}"
+                            data-telefono="{{ s.telefono }}"
+                            {% if not s.abierta_ahora or not s.activa %}disabled{% endif %}>
+                        {{ s.nombre }} 
+                        {% if not s.activa %}
+                            (Inactiva)
+                        {% elif not s.abierta_ahora %}
+                            (Cerrada)
+                        {% else %}
+                            (Abierta)
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <div id="sucursalInfo" class="mt-2" style="display: none;">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Información de la sucursal</h6>
+                        <div id="sucursalDetalles"></div>
+                        <div id="horariosDetalles" class="mt-2">
+                            <small class="text-muted">
+                                <strong>Horarios de atención:</strong>
+                                <div id="horariosList"></div>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Productos</label>
+            <div class="row">
+                {% for p in productos %}
+                    <div class="col-md-6 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="productos" value="{{ p.nombre }}" id="prod{{ p.id }}" onchange="calcularTotal()">
+                            <label class="form-check-label" for="prod{{ p.id }}">
+                                {{ p.nombre }} <span class="text-success">${{ p.precio }}</span>
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Total a pagar</label>
+            <input class="form-control" type="number" step="0.01" name="total" id="totalInput" placeholder="$0.00" readonly required>
+        </div>
+        
+        <button class="btn btn-success btn-lg w-100" type="submit" id="submitBtn">
+            <i class="fas fa-shopping-cart me-2"></i>Realizar pedido
+        </button>
+    </form>
+</div>
+
+<style>
+.sucursal-cerrada {
+    color: #dc3545 !important;
+    opacity: 0.6;
+}
+
+.sucursal-abierta {
+    color: #198754 !important;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.form-check-input:checked + .form-check-label {
+    font-weight: bold;
+}
+
+#sucursalInfo .card {
+    border-left: 4px solid var(--pozoleria-orange);
+}
+
+.horario-item {
+    font-size: 0.85rem;
+    padding: 2px 0;
+}
+</style>
+
+<script>
+// Datos de sucursales con horarios
+const sucursalesData = {
+    {% for s in sucursales %}
+    {{ s.id }}: {
+        nombre: "{{ s.nombre }}",
+        direccion: "{{ s.direccion }}",
+        telefono: "{{ s.telefono }}",
+        abierta: {{ s.abierta_ahora|lower }},
+        activa: {{ s.activa|lower }},
+        horarios: [
+            {% for horario in s.horarios %}
+            "{{ horario }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Precios de productos
+const precios = {
+    {% for p in productos %}
+    "{{ p.nombre }}": {{ p.precio }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+document.getElementById('sucursalSelect').addEventListener('change', function() {
+    const sucursalId = this.value;
+    const sucursalInfo = document.getElementById('sucursalInfo');
+    
+    if (sucursalId && sucursalesData[sucursalId]) {
+        const sucursal = sucursalesData[sucursalId];
+        
+        // Mostrar información de la sucursal
+        document.getElementById('sucursalDetalles').innerHTML = `
+            <p class="mb-1"><strong>Dirección:</strong> ${sucursal.direccion}</p>
+            <p class="mb-1"><strong>Teléfono:</strong> ${sucursal.telefono}</p>
+            <p class="mb-0">
+                <strong>Estado:</strong> 
+                <span class="${sucursal.abierta && sucursal.activa ? 'text-success' : 'text-danger'}">
+                    ${sucursal.abierta && sucursal.activa ? 'Abierta' : 'Cerrada'}
+                </span>
+            </p>
+        `;
+        
+        // Mostrar horarios
+        let horariosHtml = '';
+        sucursal.horarios.forEach(horario => {
+            horariosHtml += `<div class="horario-item">${horario}</div>`;
+        });
+        document.getElementById('horariosList').innerHTML = horariosHtml;
+        
+        sucursalInfo.style.display = 'block';
+        
+        // Validar si se puede hacer el pedido
+        validarFormulario();
+    } else {
+        sucursalInfo.style.display = 'none';
+    }
+});
+
+function calcularTotal() {
+    let total = 0;
+    const checkboxes = document.querySelectorAll('input[name="productos"]:checked');
+    
+    checkboxes.forEach(checkbox => {
+        const nombreProducto = checkbox.value;
+        if (precios[nombreProducto]) {
+            total += precios[nombreProducto];
+        }
+    });
+    
+    document.getElementById('totalInput').value = total.toFixed(2);
+    validarFormulario();
+}
+
+function validarFormulario() {
+    const sucursalSelect = document.getElementById('sucursalSelect');
+    const submitBtn = document.getElementById('submitBtn');
+    const totalInput = document.getElementById('totalInput');
+    
+    const sucursalId = sucursalSelect.value;
+    const total = parseFloat(totalInput.value) || 0;
+    
+    let valido = true;
+    let mensaje = '';
+    
+    if (!sucursalId) {
+        valido = false;
+        mensaje = 'Selecciona una sucursal';
+    } else if (sucursalesData[sucursalId] && (!sucursalesData[sucursalId].abierta || !sucursalesData[sucursalId].activa)) {
+        valido = false;
+        mensaje = 'La sucursal seleccionada está cerrada';
+    } else if (total <= 0) {
+        valido = false;
+        mensaje = 'Selecciona al menos un producto';
+    }
+    
+    if (valido) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>Realizar pedido';
+        submitBtn.className = 'btn btn-success btn-lg w-100';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${mensaje}`;
+        submitBtn.className = 'btn btn-secondary btn-lg w-100';
+    }
+}
+
+// Validar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    validarFormulario();
+});
+
+// Prevenir envío si no es válido
+document.getElementById('pedidoForm').addEventListener('submit', function(e) {
+    const sucursalSelect = document.getElementById('sucursalSelect');
+    const sucursalId = sucursalSelect.value;
+    
+    if (sucursalId && sucursalesData[sucursalId] && (!sucursalesData[sucursalId].abierta || !sucursalesData[sucursalId].activa)) {
+        e.preventDefault();
+        alert('No puedes realizar pedidos en una sucursal que está cerrada.');
+        return false;
+    }
+    
+    const total = parseFloat(document.getElementById('totalInput').value) || 0;
+    if (total <= 0) {
+        e.preventDefault();
+        alert('Debes seleccionar al menos un producto.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

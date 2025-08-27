@@ -1,0 +1,38 @@
+{# Parcial: nuevo_administrador (sin extends) #}
+<div class="container py-4">
+    <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-secondary mb-3">&larr; Volver a administradores</a>
+    <h2>Nuevo Administrador</h2>
+    <form method="post">
+        <input class="form-control mb-2" type="text" name="usuario" placeholder="Usuario" required>
+        <input class="form-control mb-2" type="password" name="password" placeholder="Contraseña" required>
+        <input class="form-control mb-2" type="text" name="nombre" placeholder="Nombre" required>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Rol</label>
+            <select class="form-select" name="rol" id="rolSelect" required>
+                <option value="empleado" selected>Empleado (acceso limitado por sucursal)</option>
+                <option value="super">Super (todas las sucursales)</option>
+            </select>
+        </div>
+        <div class="mb-3" id="sucursalesAsignacion">
+            <label class="form-label fw-bold">Sucursales asignadas</label>
+            <div class="border rounded p-2" style="max-height:240px;overflow:auto;">
+                {% for s in sucursales %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="suc{{ s.id }}" name="sucursales_ids" value="{{ s.id }}">
+                    <label class="form-check-label" for="suc{{ s.id }}">{{ s.nombre }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            <small class="text-muted">Solo visible si el rol es Empleado.</small>
+        </div>
+        <button class="btn btn-success" type="submit">Guardar</button>
+    </form>
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const rol = document.getElementById('rolSelect');
+        const asignacion = document.getElementById('sucursalesAsignacion');
+        function toggle(){ asignacion.style.display = (rol.value === 'super') ? 'none' : 'block'; }
+        rol.addEventListener('change', toggle); toggle();
+    });
+    </script>
+</div>

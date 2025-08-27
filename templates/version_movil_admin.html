@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Botón hamburguesa -->
+<button class="btn btn-outline-secondary" id="menuToggle" style="position:fixed;top:15px;left:15px;z-index:1050;">
+    <span class="navbar-toggler-icon"></span>
+</button>
+<!-- Sidebar menú admin (oculto por defecto en móvil) -->
+<nav id="sidebarMenu" class="sidebar bg-light" style="width:220px;position:fixed;top:0;left:-220px;height:100vh;z-index:1040;transition:left 0.3s;">
+    <ul class="nav flex-column mt-4">
+        <li class="nav-item mb-2">
+            <span class="nav-link disabled" style="color:#ff8800;opacity:1;"><strong>Menú Admin</strong></span>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link" href="/admin/">Panel principal</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link" href="/admin/sucursales">Sucursales</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link" href="/admin/menu">Productos</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link disabled" href="#">Administradores</a>
+        </li>
+        <li class="nav-item mt-4">
+            <a class="nav-link text-danger" href="/admin/logout">Cerrar sesión</a>
+        </li>
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var sidebar = document.getElementById('sidebarMenu');
+        var toggle = document.getElementById('menuToggle');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                if (sidebar.style.left === '0px') {
+                    sidebar.style.left = '-220px';
+                } else {
+                    sidebar.style.left = '0px';
+                }
+            });
+        }
+    });
+</script>
+<div class="container mt-5">
+    <!-- Aquí va el contenido del panel admin móvil -->
+    <h2 class="mb-4" style="color:var(--pozoleria-orange);">Panel de Administración (Móvil)</h2>
+    {% if sucursales %}
+        <h4>Sucursales</h4>
+        <ul>
+            {% for s in sucursales %}
+                <li>{{ s.nombre }} - {{ s.direccion }} - {{ s.telefono }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if menu %}
+        <h4>Productos</h4>
+        <ul>
+            {% for m in menu %}
+                <li>{{ m.nombre }} - ${{ m.precio }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}

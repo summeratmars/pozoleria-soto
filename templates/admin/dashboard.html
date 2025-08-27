@@ -1,0 +1,302 @@
+{# Parcial: dashboard (sin extends) #}
+<div class="container-fluid px-4">
+    <!-- Header Principal -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-tachometer-alt me-2" style="color: var(--pozoleria-orange);"></i>
+                Panel de Control
+            </h1>
+            <p class="text-muted mb-0">Resumen general del sistema</p>
+        </div>
+        <div class="col-auto">
+            {% if session.admin_nombre %}
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <span class="badge bg-primary px-3 py-2" style="font-size: 0.9rem;">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ now.strftime('%d/%m/%Y %H:%M') if now else '' }}
+                    </span>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ session.admin_nombre }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row g-3 mb-4">
+        <!-- Total Pedidos -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Pedidos del Día
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_pedidos_hoy if total_pedidos_hoy is defined else '0' }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ingresos del Día -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Ingresos del Día
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ ingresos_hoy if ingresos_hoy is defined else '0' }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos Activos -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Productos Activos
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ menu|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-utensils fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sucursales -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Sucursales Activas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ sucursales|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-store fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos Rápidos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-bolt me-2"></i>Accesos Rápidos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-primary w-100 py-3">
+                                <i class="fas fa-list-alt d-block mb-1"></i>
+                                <small>Ver Pedidos</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success w-100 py-3">
+                                <i class="fas fa-plus-circle d-block mb-1"></i>
+                                <small>Nuevo Producto</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.listar_menu') }}" class="btn btn-info w-100 py-3">
+                                <i class="fas fa-utensils d-block mb-1"></i>
+                                <small>Gestionar Menú</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.listar_sucursales') }}" class="btn btn-warning w-100 py-3">
+                                <i class="fas fa-store d-block mb-1"></i>
+                                <small>Sucursales</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.listar_categorias') }}" class="btn btn-secondary w-100 py-3">
+                                <i class="fas fa-tags d-block mb-1"></i>
+                                <small>Categorías</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{{ url_for('admin.listar_administradores') }}" class="btn btn-dark w-100 py-3">
+                                <i class="fas fa-users-cog d-block mb-1"></i>
+                                <small>Administradores</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Actividad Reciente y Resumen -->
+    <div class="row">
+        <!-- Actividad Reciente -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-clock me-2"></i>Actividad Reciente
+                    </h6>
+                    <a href="{{ url_for('admin.listar_pedidos_clientes') }}" class="btn btn-sm btn-primary">
+                        Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Sucursal</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if pedidos_recientes %}
+                                    {% for p in pedidos_recientes[:5] %}
+                                    <tr>
+                                        <td>{{ p.nombre }}</td>
+                                        <td>{{ p.sucursal.nombre if p.sucursal else 'N/A' }}</td>
+                                        <td><strong>${{ p.total }}</strong></td>
+                                        <td>
+                                            {% if p.estado == 'Entregado' %}
+                                                <span class="badge bg-success">{{ p.estado }}</span>
+                                            {% elif p.estado == 'En camino' %}
+                                                <span class="badge bg-warning">{{ p.estado }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ p.estado }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ p.fecha.strftime('%d/%m %H:%M') if p.fecha else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No hay pedidos recientes</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-info-circle me-2"></i>Información del Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="small text-muted">Versión del Sistema</div>
+                        <div class="font-weight-bold">Pozolería 2.0</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted">Última Actualización</div>
+                        <div class="font-weight-bold">Julio 2025</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted">Estado del Servidor</div>
+                        <div class="font-weight-bold text-success">
+                            <i class="fas fa-circle me-1"></i>En línea
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="small text-muted">Base de Datos</div>
+                        <div class="font-weight-bold text-success">
+                            <i class="fas fa-database me-1"></i>Conectada
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <a href="mailto:soporte@pozoleriasoto.com" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-headset me-1"></i>
+                            Contactar Soporte
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Adicionales -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-chart-pie me-2"></i>Métricas Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <span class="small">Pedidos Pendientes</span>
+                        <span class="badge bg-danger">{{ pedidos_pendientes if pedidos_pendientes is defined else '0' }}</span>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <span class="small">Pedidos En Camino</span>
+                        <span class="badge bg-warning">{{ pedidos_en_camino if pedidos_en_camino is defined else '0' }}</span>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <span class="small">Completados Hoy</span>
+                        <span class="badge bg-success">{{ pedidos_completados_hoy if pedidos_completados_hoy is defined else '0' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small">Total Administradores</span>
+                        <span class="badge bg-info">{{ total_admins if total_admins is defined else '0' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección: dashboard.html) #}
+

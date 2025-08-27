@@ -1,0 +1,196 @@
+{% extends "base_desktop.html" %}
+{% block content %}
+<div class="container py-4">
+    <!-- Header del Carrito -->
+    <div class="carrito-header text-center mb-5">
+        <h1 class="display-4">Mi Carrito de Compras</h1>
+        <p class="lead">Revisa tu pedido antes de continuar al pago</p>
+        <div class="decorative-line mx-auto"></div>
+    </div>
+
+    {% if productos %}
+        <div class="row">
+            <!-- Productos en el carrito -->
+            <div class="col-lg-8">
+                <div class="carrito-productos">
+                    {% for item in productos %}
+                    <div class="card carrito-item mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    {% if item.producto.imagen %}
+                                        <img src="{{ url_for('static', filename='uploads/' + item.producto.imagen) }}" 
+                                             class="img-fluid rounded" 
+                                             alt="{{ item.producto.nombre }}"
+                                             style="height: 100px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="height: 100px;">
+                                            <i class="fas fa-utensils fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="card-title">{{ item.producto.nombre }}</h5>
+                                            <p class="card-text text-muted mb-2">{{ item.producto.descripcion or 'Delicioso platillo de nuestra pozolería' }}</p>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    Precio unitario: ${{ "%.2f"|format(item.producto.precio) }}
+                                                </small>
+                                            </p>
+                                            
+                                            <!-- Opciones personalizadas -->
+                                            {% if item.opciones_personalizadas %}
+                                                <div class="opciones-seleccionadas mb-3">
+                                                    <h6 class="text-muted">Opciones seleccionadas:</h6>
+                                                    {% for opcion in item.opciones_personalizadas %}
+                                                        <span class="badge bg-info me-2 mb-1">
+                                                            {{ opcion.valor_texto }}
+                                                            {% if opcion.precio > 0 %}
+                                                                (+${{ "%.2f"|format(opcion.precio) }})
+                                                            {% endif %}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Controles cantidad -->
+                                            <div class="cantidad-controls-desktop">
+                                                <form method="POST" action="{{ url_for('cambiar_cantidad_item') }}" class="d-inline">
+                                                    <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                                    <input type="hidden" name="delta" value="-1">
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm" 
+                                                            {% if item.cantidad <= 1 %}disabled{% endif %}>
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                </form>
+                                                <span class="mx-3 fs-5 fw-bold">{{ item.cantidad }}</span>
+                                                <form method="POST" action="{{ url_for('cambiar_cantidad_item') }}" class="d-inline">
+                                                    <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                                    <input type="hidden" name="delta" value="1">
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="precio-total-item mb-3">
+                                                <h4 class="text-success fw-bold">${{ "%.2f"|format(item.subtotal) }}</h4>
+                                            </div>
+                                            <form method="POST" action="{{ url_for('eliminar_item') }}" class="d-inline">
+                                                <input type="hidden" name="indice" value="{{ loop.index0 }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('¿Eliminar este producto del carrito?')">
+                                                    <i class="fas fa-trash me-1"></i>Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Resumen del pedido -->
+            <div class="col-lg-4">
+                <div class="card resumen-pedido sticky-top" style="top: 100px;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="resumen-detalle mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Productos ({{ productos|length }})</span>
+                                <span>${{ "%.2f"|format(total) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Envío</span>
+                                <span class="text-success">Gratis</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold">Total:</span>
+                                <span class="fs-4 fw-bold text-success">${{ "%.2f"|format(total) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('checkout') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                            </a>
+                            <a href="{{ url_for('catalogo') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+                            </a>
+                            <form method="POST" action="{{ url_for('limpiar_carrito') }}" 
+                                  onsubmit="return confirm('¿Estás seguro de que quieres vaciar el carrito?')">
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="fas fa-trash me-2"></i>Vaciar Carrito
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Carrito vacío -->
+        <div class="carrito-vacio text-center py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-cart fa-6x text-muted"></i>
+                    </div>
+                    <h2 class="text-muted mb-3">Tu carrito está vacío</h2>
+                    <p class="text-muted mb-4 lead">
+                        ¡Descubre nuestros deliciosos pozoles y agrega algunos a tu carrito!
+                    </p>
+                    <a href="{{ url_for('catalogo') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-utensils me-2"></i>Explorar Catálogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* Estilos adicionales para carrito escritorio */
+.carrito-item {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.carrito-item:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.cantidad-controls-desktop .btn {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resumen-pedido {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.precio-total-item h4 {
+    text-shadow: 0 1px 2px rgba(40, 167, 69, 0.2);
+}
+
+.opciones-seleccionadas .badge {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+}
+</style>
+{% endblock %}

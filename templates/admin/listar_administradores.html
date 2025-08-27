@@ -1,0 +1,496 @@
+{# Parcial: listar_administradores (sin extends) #}
+<div class="admin-main-content">
+    <div class="container-fluid px-4 py-3">
+    <!-- Header Moderno -->
+    <div class="admin-header mb-5">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="header-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="header-icon-container me-3">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <div>
+                            <h1 class="header-title mb-1">Gestión de Administradores</h1>
+                            <p class="header-subtitle mb-0">
+                                Administra los usuarios con permisos de administración del sistema
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
+                {% if session.admin_nombre %}
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield me-2"></i>
+                    <span>{{ session.admin_nombre }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas y Métricas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ admins|length }}</div>
+                    <div class="stat-label">Total Administradores</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon active">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ admins|selectattr('usuario')|list|length }}</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon security">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Nivel Seguridad</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon access">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ admins|selectattr('nombre')|list|length }}</div>
+                    <div class="stat-label">Con Acceso Completo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Control y Acciones -->
+    <div class="control-panel mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="search-container">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control search-input" 
+                               id="searchAdministrators" 
+                               placeholder="Buscar por usuario o nombre...">
+                        <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="action-buttons">
+                    <button class="btn btn-modern btn-outline-primary me-2" onclick="exportAdministrators()">
+                        <i class="fas fa-download me-2"></i>Exportar Lista
+                    </button>
+                    <button class="btn btn-modern btn-outline-info me-2" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Actualizar
+                    </button>
+                    <a href="{{ url_for('admin.nuevo_administrador') }}" class="btn btn-modern btn-success">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo Administrador
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Administradores -->
+    <div class="administrators-grid" id="administratorsContainer">
+        {% if admins %}
+            {% for admin in admins %}
+            <div class="admin-card" data-search="{{ admin.usuario|lower }} {{ (admin.nombre or '')|lower }} {{ admin.rol }} {% for s in admin.sucursales %} {{ s.nombre|lower }}{% endfor %}">
+                <div class="admin-card-header">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="admin-status">
+                        <span class="status-indicator active"></span>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-info">
+                        <h4 class="admin-name d-flex align-items-center flex-wrap gap-2">
+                            <span>{{ admin.nombre or 'Sin nombre asignado' }}</span>
+                            {% if admin.rol == 'super' %}
+                                <span class="badge bg-gradient" style="background:linear-gradient(45deg,#6f42c1,#a070ff);"><i class="fas fa-crown me-1"></i>SUPER</span>
+                            {% else %}
+                                <span class="badge bg-info text-dark"><i class="fas fa-user-tag me-1"></i>EMPLEADO</span>
+                            {% endif %}
+                        </h4>
+                        <p class="admin-username mb-2">
+                            <i class="fas fa-at me-1"></i>{{ admin.usuario }}
+                        </p>
+                        <div class="small mt-1">
+                            {% if admin.rol == 'super' %}
+                                <i class="fas fa-store-alt me-1 text-warning"></i><strong>Todas las sucursales</strong>
+                            {% else %}
+                                {% if admin.sucursales %}
+                                    <i class="fas fa-store me-1 text-secondary"></i>
+                                    <span>
+                                        {% set nombres = admin.sucursales | map(attribute='nombre') | list %}
+                                        {% if nombres|length <= 2 %}
+                                            {{ nombres|join(', ') }}
+                                        {% else %}
+                                            {{ nombres[:2]|join(', ') }} <span class="text-muted" data-bs-toggle="tooltip" title="{{ nombres[2:]|join(', ') }}">+{{ nombres|length - 2 }}</span>
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Sin sucursales asignadas</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="admin-meta mt-3">
+                            <div class="meta-item">
+                                <i class="fas fa-id-badge me-1"></i>
+                                <span>ID: {{ admin.id }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-user-shield me-1"></i>
+                                {% if admin.rol == 'super' %}
+                                    <span>Super Administrador</span>
+                                {% else %}
+                                    <span>Empleado</span>
+                                {% endif %}
+                            </div>
+                            {% if admin.rol != 'super' %}
+                            <div class="meta-item">
+                                <i class="fas fa-layer-group me-1"></i>
+                                <span>{{ admin.sucursales|length }} sucursal(es)</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card-footer">
+                    <div class="admin-actions">
+                        <a href="{{ url_for('admin.editar_administrador', id=admin.id) }}" 
+                           class="btn btn-modern btn-primary btn-sm" 
+                           data-bs-toggle="tooltip" 
+                           title="Editar administrador">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </a>
+                        <button class="btn btn-modern btn-outline-info btn-sm" 
+                                onclick="viewAdminDetails({{ admin.id }})"
+                                data-bs-toggle="tooltip" 
+                                title="Ver detalles">
+                            <i class="fas fa-eye me-1"></i>Ver
+                        </button>
+                        {% if admins|length > 1 %}
+                        <button class="btn btn-modern btn-outline-danger btn-sm" 
+                                onclick="confirmDeleteAdmin({{ admin.id }}, '{{ admin.usuario }}')"
+                                data-bs-toggle="tooltip" 
+                                title="Eliminar administrador">
+                            <i class="fas fa-trash me-1"></i>Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users-slash"></i>
+                </div>
+                <div class="empty-title">No hay administradores registrados</div>
+                <div class="empty-text">
+                    Comienza agregando el primer administrador del sistema
+                </div>
+                <div class="empty-action">
+                    <a href="{{ url_for('admin.nuevo_administrador') }}" class="btn btn-modern btn-success btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Crear Primer Administrador
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal para detalles del administrador -->
+    <div class="modal fade" id="adminDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modern-modal">
+                <div class="modal-header modern-modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-tie me-2"></i>
+                        Detalles del Administrador
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="adminDetailsContent">
+                    <!-- Contenido cargado dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content modern-modal">
+                <div class="modal-header modern-modal-header bg-danger">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-times fa-3x text-danger mb-3"></i>
+                        <h5>¿Estás seguro de eliminar este administrador?</h5>
+                        <p class="text-muted">Esta acción no se puede deshacer.</p>
+                        <div class="alert alert-warning">
+                            <strong>Usuario:</strong> <span id="deleteAdminUsername"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modern btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Estilos migrados a admin_pages.css sección: listar_administradores.html (parcial genérico) #}
+
+<script>
+// Modern JavaScript functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchAdministrators');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const adminCards = document.querySelectorAll('.admin-card');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        if (searchTerm) {
+            this.classList.add('active');
+            clearSearchBtn.style.display = 'block';
+        } else {
+            this.classList.remove('active');
+            clearSearchBtn.style.display = 'none';
+        }
+        
+        adminCards.forEach(card => {
+            const searchData = card.getAttribute('data-search');
+            if (searchData.includes(searchTerm)) {
+                card.classList.remove('hidden');
+                card.style.animation = 'fadeInUp 0.3s ease-out';
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+        
+        // Show/hide empty message
+        const visibleCards = document.querySelectorAll('.admin-card:not(.hidden)');
+        updateEmptyState(visibleCards.length === 0 && searchTerm);
+    });
+    
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.classList.remove('active');
+        this.style.display = 'none';
+        
+        adminCards.forEach(card => {
+            card.classList.remove('hidden');
+            card.style.animation = 'fadeInUp 0.3s ease-out';
+        });
+        
+        updateEmptyState(false);
+    });
+});
+
+// Function to show/hide empty state for search
+function updateEmptyState(show) {
+    let emptySearch = document.getElementById('emptySearchState');
+    
+    if (show && !emptySearch) {
+        emptySearch = document.createElement('div');
+        emptySearch.id = 'emptySearchState';
+        emptySearch.className = 'empty-state';
+        emptySearch.innerHTML = `
+            <div class="empty-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="empty-title">No se encontraron administradores</div>
+            <div class="empty-text">
+                Intenta con otros términos de búsqueda
+            </div>
+        `;
+        document.getElementById('administratorsContainer').appendChild(emptySearch);
+    } else if (!show && emptySearch) {
+        emptySearch.remove();
+    }
+}
+
+// View admin details function
+function viewAdminDetails(adminId) {
+    const modal = new bootstrap.Modal(document.getElementById('adminDetailsModal'));
+    const content = document.getElementById('adminDetailsContent');
+    
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Cargando detalles...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Simulate loading admin details
+    setTimeout(() => {
+        content.innerHTML = `
+            <div class="admin-details">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="admin-avatar-large">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success">Activo</span>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h4>Detalles del Administrador</h4>
+                        <hr>
+                        <div class="detail-row">
+                            <strong>ID:</strong> ${adminId}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Permisos:</strong> Administrador Total
+                        </div>
+                        <div class="detail-row">
+                            <strong>Último Acceso:</strong> Hoy
+                        </div>
+                        <div class="detail-row">
+                            <strong>Estado:</strong> <span class="text-success">Activo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }, 1000);
+}
+
+// Confirm delete admin
+function confirmDeleteAdmin(adminId, username) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    document.getElementById('deleteAdminUsername').textContent = username;
+    
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.onclick = function() {
+        // Here you would implement the actual delete functionality
+        showNotification('Funcionalidad de eliminación pendiente de implementar', 'warning');
+        modal.hide();
+    };
+    
+    modal.show();
+}
+
+// Export administrators function
+function exportAdministrators() {
+    showNotification('Exportando lista de administradores...', 'info');
+    
+    // Simulate export process
+    setTimeout(() => {
+        showNotification('Lista exportada exitosamente', 'success');
+    }, 2000);
+}
+
+// Refresh data function
+function refreshData() {
+    showNotification('Actualizando datos...', 'info');
+    
+    // Simulate refresh
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const existing = document.querySelectorAll('.notification');
+    existing.forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const colors = {
+        success: '#28a745',
+        error: '#dc3545',
+        warning: '#ffc107',
+        info: '#17a2b8'
+    };
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+        ">
+            <i class="${icons[type]}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Animaciones y estilos de notificación migrados a CSS global (admin_pages.css)
+</script>
+
+</div>

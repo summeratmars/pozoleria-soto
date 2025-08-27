@@ -1,0 +1,26 @@
+{# Parcial: nuevo_pedido (sin extends) #}
+<div class="container py-4">
+    <a href="{{ url_for('admin.listar_pedidos') }}" class="btn btn-secondary mb-3">&larr; Volver a pedidos</a>
+    <h2>Nuevo Pedido</h2>
+    <form method="post">
+        <input class="form-control mb-2" type="text" name="cliente" placeholder="Nombre del cliente" required>
+        <input class="form-control mb-2" type="datetime-local" name="fecha" required>
+        <select class="form-control mb-2" name="sucursal_id" required>
+            <option value="">Sucursal</option>
+            {% for s in sucursales %}
+                <option value="{{ s.id }}">{{ s.nombre }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label mt-2">Productos:</label>
+        <div class="mb-2">
+            {% for p in productos %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="productos" value="{{ p.nombre }}" id="prod{{ p.id }}">
+                    <label class="form-check-label" for="prod{{ p.id }}">{{ p.nombre }} (${{ p.precio }})</label>
+                </div>
+            {% endfor %}
+        </div>
+        <input class="form-control mb-2" type="number" step="0.01" name="total" placeholder="Total" required>
+        <button class="btn btn-success" type="submit">Guardar pedido</button>
+    </form>
+</div>

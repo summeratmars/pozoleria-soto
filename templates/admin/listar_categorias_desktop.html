@@ -1,0 +1,448 @@
+{% extends "admin/base_admin_desktop.html" %}
+
+{% block title %}Gestión de Categorías - Pozolería Soto{% endblock %}
+
+{% block content %}
+<div class="admin-desktop-container">
+    <!-- Header con estadísticas -->
+    <div class="admin-page-header-desktop">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="page-icon-desktop me-3">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div>
+                        <h2 class="page-title-desktop mb-1">Gestión de Categorías</h2>
+                        <p class="page-subtitle-desktop mb-0">Organiza y administra las categorías de tu menú</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-mini-desktop">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-primary">
+                                <i class="fas fa-tags"></i>
+                                <span>{{ categorias|length }} Categorías</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-info">
+                                <i class="fas fa-utensils"></i>
+                                <span>{{ total_productos }} Productos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones principales -->
+    <div class="admin-actions-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0 me-3">Gestión de Categorías</h5>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Nueva Categoría
+                                </a>
+                                <button class="btn btn-outline-primary" onclick="reorganizarCategorias()">
+                                    <i class="fas fa-sort me-2"></i>Reorganizar
+                                </button>
+                                <button class="btn btn-outline-info" onclick="exportarCategorias()">
+                                    <i class="fas fa-download me-2"></i>Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="input-group">
+                            <input type="text" class="form-control" 
+                                   placeholder="Buscar categoría..." 
+                                   id="busquedaCategoriaDesktop">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista de categorías desktop -->
+    <div class="admin-categories-desktop">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Lista de Categorías ({{ categorias|length }})
+                    </h5>
+                    <div class="view-controls">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary btn-sm active" 
+                                    onclick="cambiarVistaCategoria('cards')" id="btnVistaCards">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    onclick="cambiarVistaCategoria('table')" id="btnVistaTablaCategoria">
+                                <i class="fas fa-table"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Vista en Cards (por defecto) -->
+                <div id="vistaCards" class="categorias-cards-desktop p-4">
+                    <div class="row g-4">
+                        {% for categoria in categorias %}
+                        <div class="col-lg-4 col-md-6 categoria-item-desktop" 
+                             data-nombre="{{ categoria.nombre.lower() }}">
+                            <div class="card categoria-card-desktop h-100">
+                                <!-- Header de la categoría -->
+                                <div class="card-header bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ categoria.nombre }}</h5>
+                                        <span class="badge bg-primary">
+                                            {{ categoria.menu_items|length }} productos
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <!-- Icono representativo -->
+                                    <div class="categoria-icon-desktop text-center mb-3">
+                                        <div class="icon-container">
+                                            <i class="fas fa-utensils fa-3x text-primary"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Descripción -->
+                                    {% if categoria.descripcion %}
+                                    <p class="card-text text-muted mb-3">
+                                        {{ categoria.descripcion }}
+                                    </p>
+                                    {% else %}
+                                    <p class="card-text text-muted mb-3 fst-italic">
+                                        Sin descripción
+                                    </p>
+                                    {% endif %}
+
+                                    <!-- Información adicional -->
+                                    <div class="categoria-info-desktop mb-3">
+                                        <div class="row g-2 text-center">
+                                            <div class="col-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-utensils text-success"></i>
+                                                    <small class="d-block">{{ categoria.menu_items|length }} Productos</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-calendar text-info"></i>
+                                                    <small class="d-block">
+                                                        {{ categoria.fecha_creacion.strftime('%d/%m/%Y') if categoria.fecha_creacion else 'N/D' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Productos asociados preview -->
+                                    {% if categoria.menu_items %}
+                                    <div class="productos-preview-desktop">
+                                        <h6 class="small text-muted mb-2">Productos asociados:</h6>
+                                        <div class="productos-tags">
+                                            {% for item in categoria.menu_items[:4] %}
+                                            <span class="badge bg-light text-dark me-1 mb-1">{{ item.nombre }}</span>
+                                            {% endfor %}
+                                            {% if categoria.menu_items|length > 4 %}
+                                            <span class="badge bg-secondary">+{{ categoria.menu_items|length - 4 }} más</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="productos-preview-desktop">
+                                        <div class="alert alert-warning alert-sm">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <small>Sin productos asignados</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Acciones de la categoría -->
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                        <a href="{{ url_for('admin.editar_categoria', id=categoria.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verProductosCategoria({{ categoria.id }})"
+                                                    title="Ver productos">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="eliminarCategoriaDesktop({{ categoria.id }}, '{{ categoria.nombre }}', {{ categoria.menu_items|length }})"
+                                                    title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Vista en Tabla -->
+                <div id="vistaTablaCategoria" class="categorias-tabla-desktop" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="tablaCategoriasDesktop">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="20%">Nombre</th>
+                                    <th width="35%">Descripción</th>
+                                    <th width="15%">Productos</th>
+                                    <th width="10%">Fecha</th>
+                                    <th width="15%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categorias %}
+                                <tr class="categoria-row-desktop" 
+                                    data-nombre="{{ categoria.nombre.lower() }}">
+                                    <td>
+                                        <span class="badge bg-light text-dark">#{{ categoria.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="categoria-icon-small me-2">
+                                                <i class="fas fa-tag text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ categoria.nombre }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if categoria.descripcion %}
+                                        <span class="text-muted">{{ categoria.descripcion[:60] }}{% if categoria.descripcion|length > 60 %}...{% endif %}</span>
+                                        {% else %}
+                                        <span class="text-muted fst-italic">Sin descripción</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ categoria.menu_items|length }}</span>
+                                        {% if categoria.menu_items|length == 0 %}
+                                        <small class="text-warning d-block">
+                                            <i class="fas fa-exclamation-triangle"></i> Sin productos
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ categoria.fecha_creacion.strftime('%d/%m/%Y') if categoria.fecha_creacion else 'N/D' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.editar_categoria', id=categoria.id) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verProductosCategoria({{ categoria.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="eliminarCategoriaDesktop({{ categoria.id }}, '{{ categoria.nombre }}', {{ categoria.menu_items|length }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not categorias %}
+    <div class="empty-state-desktop text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-tags fa-5x text-muted mb-4"></i>
+                <h4 class="text-muted mb-2">No hay categorías</h4>
+                <p class="text-muted">Crea categorías para organizar mejor tu menú y facilitar la navegación de tus clientes</p>
+                <a href="{{ url_for('admin.nueva_categoria') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Crear Primera Categoría
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de productos de la categoría -->
+<div class="modal fade" id="modalProductosCategoria" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-utensils me-2"></i>
+                    Productos de la Categoría
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoProductosCategoria">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+<script>
+// Inicializar DataTable para vista de tabla
+$(document).ready(function() {
+    $('#tablaCategoriasDesktop').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[ 1, "asc" ]], // Ordenar por nombre
+        "columnDefs": [
+            { "orderable": false, "targets": 5 } // Columna de acciones no ordenable
+        ]
+    });
+});
+
+// Cambiar entre vista cards y tabla
+function cambiarVistaCategoria(vista) {
+    const vistaCards = document.getElementById('vistaCards');
+    const vistaTabla = document.getElementById('vistaTablaCategoria');
+    const btnCards = document.getElementById('btnVistaCards');
+    const btnTabla = document.getElementById('btnVistaTablaCategoria');
+    
+    if (vista === 'cards') {
+        vistaCards.style.display = 'block';
+        vistaTabla.style.display = 'none';
+        btnCards.classList.add('active');
+        btnTabla.classList.remove('active');
+    } else {
+        vistaCards.style.display = 'none';
+        vistaTabla.style.display = 'block';
+        btnCards.classList.remove('active');
+        btnTabla.classList.add('active');
+    }
+}
+
+// Búsqueda
+document.getElementById('busquedaCategoriaDesktop').addEventListener('input', function() {
+    const busqueda = this.value.toLowerCase();
+    
+    // Filtrar vista cards
+    const categoriasCards = document.querySelectorAll('.categoria-item-desktop');
+    categoriasCards.forEach(categoria => {
+        const nombre = categoria.dataset.nombre;
+        categoria.style.display = nombre.includes(busqueda) ? 'block' : 'none';
+    });
+    
+    // Filtrar vista tabla
+    const categoriasTabla = document.querySelectorAll('.categoria-row-desktop');
+    categoriasTabla.forEach(categoria => {
+        const nombre = categoria.dataset.nombre;
+        categoria.style.display = nombre.includes(busqueda) ? '' : 'none';
+    });
+});
+
+function verProductosCategoria(categoriaId) {
+    fetch(`/admin/categoria/${categoriaId}/productos`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoProductosCategoria').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalProductosCategoria')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar los productos', 'error');
+        });
+}
+
+function eliminarCategoriaDesktop(categoriaId, nombreCategoria, cantidadProductos) {
+    let mensaje = `¿Estás seguro de que deseas eliminar la categoría "${nombreCategoria}"?`;
+    
+    if (cantidadProductos > 0) {
+        mensaje += `\n\nEsta categoría tiene ${cantidadProductos} producto(s) asociado(s). Los productos quedarán sin categoría pero no se eliminarán.`;
+    }
+    
+    if (confirm(mensaje)) {
+        fetch(`/admin/categoria/${categoriaId}/eliminar`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Categoría eliminada correctamente', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Error al eliminar la categoría', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al eliminar la categoría', 'error');
+        });
+    }
+}
+
+function reorganizarCategorias() {
+    // Implementar drag & drop o modal de reordenamiento
+    showNotification('Función de reorganización en desarrollo', 'info');
+}
+
+function exportarCategorias() {
+    window.location.href = '/admin/categorias/exportar';
+}
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'info' ? 'alert-info' : 'alert-danger';
+    const alert = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alert);
+    
+    setTimeout(() => {
+        const alertElement = document.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

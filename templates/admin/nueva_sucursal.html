@@ -1,0 +1,235 @@
+{# Parcial: nueva_sucursal (sin extends) #}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-plus-circle me-2" style="color: var(--pozoleria-orange);"></i>
+                Nueva Sucursal
+            </h1>
+            <p class="text-muted mb-0">Agrega una nueva ubicación para tu negocio</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.listar_sucursales') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver a Sucursales
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Formulario Principal -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                        <i class="fas fa-store me-2"></i>Información de la Sucursal
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <label for="nombre" class="form-label fw-bold">
+                                    <i class="fas fa-store text-primary me-2"></i>Nombre de la Sucursal
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       id="nombre" 
+                                       name="nombre" 
+                                       placeholder="Ej. Sucursal Centro, Pozolería Norte..."
+                                       required
+                                       maxlength="100">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Un nombre distintivo para identificar esta ubicación
+                                </div>
+                                <div class="invalid-feedback">
+                                    Por favor, ingresa el nombre de la sucursal.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <label for="direccion" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>Dirección Completa
+                                </label>
+                                <textarea class="form-control form-control-lg"
+                                          id="direccion"
+                                          name="direccion"
+                                          rows="3"
+                                          placeholder="Calle, número, colonia, ciudad, estado..."
+                                          required
+                                          maxlength="300"></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Incluye todos los detalles para que los clientes puedan ubicar fácilmente la sucursal
+                                </div>
+                                <div class="invalid-feedback">
+                                    Por favor, ingresa la dirección completa.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="telefono" class="form-label fw-bold">
+                                    <i class="fas fa-phone text-success me-2"></i>Teléfono de Contacto
+                                </label>
+                                <input type="tel" 
+                                       class="form-control form-control-lg" 
+                                       id="telefono" 
+                                       name="telefono" 
+                                       placeholder="Ej. (55) 1234-5678"
+                                       required
+                                       pattern="[\d\s\-\(\)]*"
+                                       maxlength="20">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Número principal para pedidos y consultas
+                                </div>
+                                <div class="invalid-feedback">
+                                    Por favor, ingresa un teléfono válido.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-toggle-on me-2" style="color: var(--pozoleria-orange);"></i>Estado Inicial
+                                </label>
+                                <div class="card border-0" style="background-color: #f8f9fc;">
+                                    <div class="card-body p-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   role="switch" 
+                                                   id="activa" 
+                                                   name="activa"
+                                                   checked
+                                                   onchange="actualizarEstadoSucursalNueva()">
+                                            <label class="form-check-label fw-bold" for="activa" id="estadoLabelNueva">
+                                                <i class="fas fa-check-circle text-success me-2"></i>Sucursal Activa
+                                            </label>
+                                        </div>
+                                        <div class="form-text mt-2 text-success" id="estadoDescripcionNueva">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Se creará activa y disponible para pedidos
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex gap-3 justify-content-end pt-3 border-top">
+                                    <a href="{{ url_for('admin.listar_sucursales') }}" 
+                                       class="btn btn-light btn-lg px-4">
+                                        <i class="fas fa-times me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-4">
+                                        <i class="fas fa-save me-2"></i>Guardar Sucursal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de ayuda -->
+            <div class="card shadow border-0 mt-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>Consejos para agregar sucursales
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 32px; height: 32px; font-size: 14px;">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">Nombre claro</div>
+                                    <div class="text-muted small">Usa nombres que distingan fácilmente cada ubicación</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 32px; height: 32px; font-size: 14px;">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">Dirección precisa</div>
+                                    <div class="text-muted small">Incluye referencias para facilitar la ubicación</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 32px; height: 32px; font-size: 14px;">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">Contacto directo</div>
+                                    <div class="text-muted small">Número donde puedan comunicarse directamente</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección sucursal_form.html) #}
+
+<script>
+// Función para actualizar el estado visual de la nueva sucursal
+function actualizarEstadoSucursalNueva() {
+    const checkbox = document.getElementById('activa');
+    const label = document.getElementById('estadoLabelNueva');
+    const descripcion = document.getElementById('estadoDescripcionNueva');
+    
+    if (checkbox.checked) {
+        label.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Sucursal Activa';
+        descripcion.innerHTML = '<i class="fas fa-info-circle me-1"></i>Se creará activa y disponible para pedidos';
+        descripcion.className = 'form-text mt-2 text-success';
+    } else {
+        label.innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>Sucursal Inactiva';
+        descripcion.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Se creará desactivada - no aparecerá para clientes';
+        descripcion.className = 'form-text mt-2 text-warning';
+    }
+}
+
+// Validación en tiempo real
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Formateo automático del teléfono
+document.getElementById('telefono').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 10) {
+        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    }
+    e.target.value = value;
+});
+</script>

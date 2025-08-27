@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4" style="color:var(--pozoleria-orange);">Carrito de Compras</h2>
+    <div id="carrito-vacio" class="alert alert-info text-center" style="display:none;">
+        <i class="bi bi-cart-x-fill" style="font-size:2em;"></i>
+        <p class="mt-2" style="font-size:1.2em;">Tu carrito está vacío.</p>
+        <a href="{{ url_for('catalogo') }}" class="btn btn-success">
+            <i class="bi bi-arrow-left-circle"></i> Seguir comprando
+        </a>
+    </div>
+    <div id="carrito-contenido" style="display:none;">
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <h4>Productos en el carrito:</h4>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-danger" id="btn-vaciar-carrito">
+                    <i class="bi bi-trash-fill"></i> Vaciar carrito
+                </button>
+            </div>
+        </div>
+        <div id="lista-productos-carrito" class="row g-3">
+            <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <h4>Datos de envío:</h4>
+                <form id="form-envio">
+                    <div class="mb-3">
+                        <label for="nombre-envio" class="form-label">Nombre completo:</label>
+                        <input type="text" class="form-control" id="nombre-envio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="direccion-envio" class="form-label">Dirección:</label>
+                        <input type="text" class="form-control" id="direccion-envio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono-envio" class="form-label">Teléfono:</label>
+                        <input type="tel" class="form-control" id="telefono-envio" required>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <h4>Resumen de compra:</h4>
+                <div id="resumen-compra" class="p-3 border rounded">
+                    <p class="mb-2"><strong>Total:</strong> <span id="total-carrito">$0.00</span></p>
+                    <button class="btn btn-primary w-100" id="btn-confirmar-compra">
+                        <i class="bi bi-check-circle"></i> Confirmar compra
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+/* Estilos específicos para el carrito */
+#lista-productos-carrito .producto-carrito {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    background: #fff;
+    position: relative;
+}
+#lista-productos-carrito .producto-carrito:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+#lista-productos-carrito .producto-carrito .btn-eliminar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+#lista-productos-carrito .producto-carrito .btn-eliminar:hover {
+    color: #c82333;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+<script>
+    // Funciones para el carrito
+    function actualizarListaCarrito() {
+        var carrito = getCarritoSucursal();
+        var listaProductos = document.getElementById('lista-productos-carrito');
+        var totalCarrito = document.getElementById('total-carrito');
+        listaProductos.innerHTML = '';
+        var total = 0;
+        carrito.forEach(function(item) {
+            var producto = opcionesPorProducto[item.id];
+            if (producto) {
+                var precio = producto.precio || 0;
+                total += precio * (item.cantidad || 1);
+                var productoHtml = `
+                    <div class="col-md-6 producto-carrito" data-id="${item.id}">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-1">${producto.nombre}</h5>
+                                <p class="mb-1" style="font-size:0.9em;">Cantidad: ${item.cantidad}</p>
+                                <p class="mb-0" style="font-size:0.9em;">Precio unitario: $${precio.toFixed(2)}</p>
+                            </div>
+                            <button class="btn-eliminar" onclick="eliminarDelCarrito('${item.id}')">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listaProductos.insertAdjacentHTML('beforeend', productoHtml);
+            }
+        });
+        totalCarrito.textContent = '$' + total.toFixed(2);
+        document.getElementById('carrito-vacio').style.display = carrito.length ? 'none' : 'block';
+        document.getElementById('carrito-contenido').style.display = carrito.length ? 'block' : 'none';
+    }
+
+    function eliminarDelCarrito(id) {
+        var carrito = getCarritoSucursal();
+        var nuevoCarrito = carrito.filter(function(item) { return item.id !== id; });
+        setCarritoSucursal(nuevoCarrito);
+        actualizarCarritoHeader();
+        actualizarListaCarrito();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarListaCarrito();
+    });
+</script>
+{% endblock %}

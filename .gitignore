@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+instance/*.db
+instance/pozoleria_new.db
+.env
+*.env
+.env.*
+
+# VSCode
+.vscode/
+
+# Byte-compiled / cache
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# Logs
+*.log
+
+# SQLite local
+pozoleria_new.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Telegram offset state
+telegram_offset.txt
+
+# Uploaded media
+static/uploads/*
+!static/uploads/.gitkeep

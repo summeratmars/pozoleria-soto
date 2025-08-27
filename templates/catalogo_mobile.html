@@ -1,0 +1,497 @@
+{% extends "base_mobile.html" %}
+{% block content %}
+<div class="container py-4">
+    <!-- Header del Catálogo -->
+    <div class="catalog-header text-center mb-4">
+        <h1 class="display-4">¡Ordena tu Pozole!</h1>
+        <p class="lead">Selecciona tu pozole favorito y las opciones que más te gusten</p>
+        <div class="decorative-line mx-auto"></div>
+    </div>
+
+    <!-- Categorías -->
+    <div class="categories-section mb-4">
+        <div class="categories-container">
+            <div class="category-item">
+                <div class="category-btn active" data-categoria="todas">
+                    <div class="category-icon">🍲</div>
+                    <div class="category-name">Todas</div>
+                    <div class="category-count">{{ productos|length }}</div>
+                </div>
+            </div>
+            {% for categoria in categorias %}
+            <div class="category-item">
+                <div class="category-btn" data-categoria="{{ categoria.id }}">
+                    <div class="category-icon">{{ categoria.icono or '🍽️' }}</div>
+                    <div class="category-name">{{ categoria.nombre }}</div>
+                    <div class="category-count">{{ categoria.productos_count }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="row g-3" id="productos-container">
+        {% for producto in productos %}
+        <div class="col-12 col-sm-6 producto-item" 
+             data-categoria="{{ producto.categoria_id }}" 
+             data-sucursales="{{ producto.sucursales|join(',') }}">
+            <div class="card product-card h-100">
+                <div class="card-img-container">
+                    {% if producto.imagen_url %}
+                        <img src="{{ producto.imagen_url }}" 
+                             class="card-img-top" 
+                             alt="{{ producto.nombre }}"
+                             loading="lazy">
+                    {% else %}
+                        <div class="card-img-placeholder">
+                            <i class="fas fa-utensils fa-3x text-muted"></i>
+                            <p class="text-muted mt-2">Sin imagen</p>
+                        </div>
+                    {% endif %}
+                    <div class="category-badge">{{ producto.categoria_nombre }}</div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <p class="card-text">{{ producto.descripcion or 'Delicioso platillo de nuestra pozolería' }}</p>
+                    <div class="price-section">
+                        <span class="price">Desde ${{ "%.2f"|format(producto.precio) }}</span>
+                    </div>
+            <button class="btn btn-agregar-menu" 
+                onclick='abrirModalProducto({{ producto|tojson|safe }})'>
+                        <i class="fas fa-plus"></i> Agregar al Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="sinProductosMsg" class="text-center text-muted py-5" style="display:none;">
+        <i class="fas fa-info-circle fa-2x mb-3"></i>
+        <p class="mb-2">No hay productos disponibles para esta sucursal o filtros.</p>
+        <button class="btn btn-outline-primary btn-sm" onclick="resetFiltrosCatalogo()">Mostrar todos</button>
+    </div>
+</div>
+
+<!-- Modal Producto -->
+<div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content modal-content-moderno">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="modalProductoLabel">Personaliza tu pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0 h-100">
+                    <!-- Imagen del producto -->
+                    <div class="col-12 col-md-6">
+                        <div class="imagen-producto-container">
+                            <div class="imagen-principal">
+                                <img id="imagenProductoModal" src="" alt="" class="img-fluid rounded">
+                                <div id="noImagenPlaceholder" class="no-image-placeholder" style="display: none;">
+                                    <i class="fas fa-utensils fa-5x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Sin imagen disponible</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido del producto -->
+                    <div class="col-12 col-md-6">
+                        <div class="contenido-producto">
+                            <div class="opciones-scroll-container-completo">
+                                <!-- Header del producto -->
+                                <div class="producto-header-scroll">
+                                    <h3 class="producto-titulo-scroll" id="nombreProductoModal"></h3>
+                                    <div class="precio-base-scroll">
+                                        <span id="precioBaseModal">$0.00</span>
+                                    </div>
+                                    <p class="producto-descripcion-scroll" id="descripcionProductoModal"></p>
+                                </div>
+                                
+                                <!-- Opciones del producto -->
+                                <div id="opcionesContainer"></div>
+                            </div>
+                            
+                            <!-- Controles inferiores -->
+                            <div class="controles-inferiores">
+                                <div class="cantidad-y-precio">
+                                    <div class="cantidad-controls-moderno">
+                                        <button type="button" class="btn-cantidad-moderno" onclick="cambiarCantidad(-1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="cantidad-display-moderno" id="cantidadModal">1</span>
+                                        <button type="button" class="btn-cantidad-moderno" onclick="cambiarCantidad(1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="precio-total-moderno">
+                                        <div class="precio-final" id="precioTotalModal">$0.00</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-agregar-moderno" onclick="agregarAlCarrito()">
+                                    <i class="fas fa-cart-plus me-2"></i>
+                                    Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toastProductoAgregado" class="toast toast-carrito" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">¡Producto agregado!</strong>
+            <small>Ahora</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <div id="toastProductoNombre" class="fw-bold"></div>
+            <div id="toastProductoDetalles" class="text-muted small"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variables globales móvil
+let productoActual = null;
+let cantidadActual = 1;
+let precioBaseActual = 0;
+
+// Función para abrir modal del producto
+function abrirModalProducto(producto) {
+    console.log('📱 Abriendo modal móvil para producto:', producto);
+    
+    productoActual = producto;
+    cantidadActual = 1;
+    precioBaseActual = parseFloat(producto.precio);
+    
+    // Actualizar información básica
+    document.getElementById('nombreProductoModal').textContent = producto.nombre;
+    document.getElementById('precioBaseModal').textContent = '$' + producto.precio.toFixed(2);
+    document.getElementById('descripcionProductoModal').textContent = producto.descripcion || 'Delicioso platillo de nuestra pozolería';
+    document.getElementById('cantidadModal').textContent = cantidadActual;
+    
+    // Manejar imagen
+    const imagenElement = document.getElementById('imagenProductoModal');
+    const placeholderElement = document.getElementById('noImagenPlaceholder');
+    
+    if (producto.imagen_url) {
+        imagenElement.src = producto.imagen_url;
+        imagenElement.alt = producto.nombre;
+        imagenElement.style.display = 'block';
+        placeholderElement.style.display = 'none';
+    } else {
+        imagenElement.style.display = 'none';
+        placeholderElement.style.display = 'block';
+    }
+    
+    // Generar opciones
+    generarOpcionesModal(producto);
+    
+    // Calcular precio inicial
+    calcularPrecioTotal();
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalProducto'));
+    modal.show();
+}
+
+// Generar opciones del producto
+function generarOpcionesModal(producto) {
+    const container = document.getElementById('opcionesContainer');
+    container.innerHTML = '';
+    
+    if (!producto.opciones || producto.opciones.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">Este producto no tiene opciones adicionales.</p>';
+        return;
+    }
+    
+    producto.opciones.forEach(opcion => {
+        const opcionDiv = document.createElement('div');
+        opcionDiv.className = 'opcion-grupo-moderno';
+        
+        let opcionHTML = `
+            <div class="opcion-header">
+                <h5 class="opcion-titulo-moderno">
+                    ${opcion.nombre}
+                    ${opcion.es_obligatoria ? '<span class="badge-obligatorio">Obligatorio</span>' : '<span class="badge-opcional">Opcional</span>'}
+                </h5>
+                ${opcion.descripcion ? `<p class="opcion-descripcion">${opcion.descripcion}</p>` : ''}
+            </div>
+            <div class="opciones-container">
+        `;
+        
+        opcion.valores.forEach(valor => {
+            const inputType = opcion.tipo === 'radio' ? 'radio' : 'checkbox';
+            const inputName = `opcion_${opcion.id}`;
+            const isRequired = opcion.es_obligatoria ? 'required' : '';
+            const precioTexto = valor.precio_adicional > 0 ? ` (+$${valor.precio_adicional.toFixed(2)})` : '';
+            
+            opcionHTML += `
+                <div class="opcion-item-moderno" onclick="seleccionarOpcion(this, '${inputType}', '${inputName}')">
+                    <div class="opcion-radio-container">
+                        <input type="${inputType}" 
+                               id="valor_${valor.id}" 
+                               name="${inputName}" 
+                               value="${valor.id}" 
+                               class="opcion-radio-input d-none" 
+                               ${isRequired}
+                               data-precio="${valor.precio_adicional}"
+                               onchange="calcularPrecioTotal()">
+                        <div class="radio-button"></div>
+                        <div class="opcion-content">
+                            <span class="opcion-nombre">${valor.nombre}</span>
+                            <span class="opcion-precio-moderno">${precioTexto}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        opcionHTML += '</div>';
+        opcionDiv.innerHTML = opcionHTML;
+        container.appendChild(opcionDiv);
+    });
+}
+
+// Seleccionar opción
+function seleccionarOpcion(elemento, tipo, nombre) {
+    const input = elemento.querySelector('input');
+    
+    if (tipo === 'radio') {
+        // Deseleccionar todas las opciones del mismo grupo
+        document.querySelectorAll(`input[name="${nombre}"]`).forEach(radio => {
+            radio.closest('.opcion-item-moderno').classList.remove('selected');
+        });
+        
+        // Seleccionar la opción actual
+        input.checked = true;
+        elemento.classList.add('selected');
+    } else {
+        // Para checkboxes, toggle
+        input.checked = !input.checked;
+        elemento.classList.toggle('selected', input.checked);
+    }
+    
+    calcularPrecioTotal();
+}
+
+// Cambiar cantidad
+function cambiarCantidad(cambio) {
+    const nuevaCantidad = cantidadActual + cambio;
+    if (nuevaCantidad >= 1 && nuevaCantidad <= 99) {
+        cantidadActual = nuevaCantidad;
+        document.getElementById('cantidadModal').textContent = cantidadActual;
+        calcularPrecioTotal();
+    }
+}
+
+// Calcular precio total
+function calcularPrecioTotal() {
+    let precioTotal = precioBaseActual;
+    
+    // Sumar precios adicionales de opciones seleccionadas
+    document.querySelectorAll('#opcionesContainer input:checked').forEach(input => {
+        const precioAdicional = parseFloat(input.dataset.precio) || 0;
+        precioTotal += precioAdicional;
+    });
+    
+    // Multiplicar por cantidad
+    precioTotal *= cantidadActual;
+    
+    document.getElementById('precioTotalModal').textContent = '$' + precioTotal.toFixed(2);
+}
+
+// Agregar al carrito (móvil usa localStorage)
+function agregarAlCarrito() {
+    if (!productoActual) return;
+    
+    // Validar opciones obligatorias
+    const opcionesObligatorias = document.querySelectorAll('#opcionesContainer input[required]');
+    for (let input of opcionesObligatorias) {
+        const nombre = input.name;
+        const grupoSeleccionado = document.querySelector(`input[name="${nombre}"]:checked`);
+        if (!grupoSeleccionado) {
+            alert('Por favor selecciona todas las opciones obligatorias');
+            return;
+        }
+    }
+    
+    // Recopilar opciones seleccionadas
+    const opcionesSeleccionadas = [];
+    document.querySelectorAll('#opcionesContainer input:checked').forEach(input => {
+        const valor = input.closest('.opcion-item-moderno').querySelector('.opcion-nombre').textContent;
+        const precio = parseFloat(input.dataset.precio) || 0;
+        opcionesSeleccionadas.push({
+            id: input.value,
+            nombre: valor,
+            precio_adicional: precio
+        });
+    });
+    
+    // Calcular precio final
+    let precioUnitario = precioBaseActual;
+    opcionesSeleccionadas.forEach(opcion => {
+        precioUnitario += opcion.precio_adicional;
+    });
+    
+    // Crear objeto del producto para el carrito
+    const itemCarrito = {
+        producto_id: productoActual.id,
+        nombre: productoActual.nombre,
+        precio_base: precioBaseActual,
+        precio: precioBaseActual, // estandarizado para cálculos cruzados
+        precio_unitario: precioUnitario,
+        cantidad: cantidadActual,
+        opciones: opcionesSeleccionadas,
+        opciones_personalizadas: opcionesSeleccionadas.map(o => ({ nombre: o.nombre, precio: o.precio_adicional })),
+        total: precioUnitario * cantidadActual,
+        timestamp: Date.now()
+    };
+    
+    // Obtener carrito actual
+    const sucursalId = localStorage.getItem('sucursal_id') || '1';
+    const carritosKey = 'carritos_por_sucursal';
+    let carritos = JSON.parse(localStorage.getItem(carritosKey)) || {};
+    
+    if (!carritos[sucursalId]) {
+        carritos[sucursalId] = [];
+    }
+    
+    // Agregar al carrito
+    carritos[sucursalId].push(itemCarrito);
+    localStorage.setItem(carritosKey, JSON.stringify(carritos));
+    // Releer y recalcular inmediatamente (garantiza consistencia en algunos navegadores)
+    carritos = JSON.parse(localStorage.getItem(carritosKey) || '{}');
+    
+    console.log('📱 Producto agregado al carrito móvil:', itemCarrito);
+    
+    // Actualizar contador del carrito (fallback si función global aún no existe)
+    if (typeof actualizarCarritoHeader === 'function') {
+        actualizarCarritoHeader();
+    } else {
+        try {
+            const cartCountEl = document.getElementById('cart-count');
+            const cartTotalEl = document.getElementById('cart-total');
+            let cantidad = 0; let total = 0;
+            carritos[sucursalId].forEach(it => {
+                const unitBase = parseFloat(it.precio || it.precio_base || 0);
+                let extras = 0;
+                if (Array.isArray(it.opciones_personalizadas)) {
+                    it.opciones_personalizadas.forEach(op => { extras += parseFloat(op.precio || op.precio_adicional || 0); });
+                } else if (Array.isArray(it.opciones)) {
+                    it.opciones.forEach(op => { extras += parseFloat(op.precio_adicional || op.precio || 0); });
+                }
+                const unitTotal = unitBase + extras;
+                cantidad += it.cantidad || 1;
+                total += unitTotal * (it.cantidad || 1);
+            });
+            if (cartCountEl) {
+                cartCountEl.textContent = cantidad;
+                cartCountEl.style.display = cantidad > 0 ? 'flex' : 'none';
+            }
+            if (cartTotalEl) {
+                cartTotalEl.textContent = '$' + total.toFixed(2);
+            }
+            console.log('⚙️ Fallback header carrito móvil actualizado (sin función global).');
+        } catch(e){ console.warn('No se pudo actualizar header carrito (fallback):', e); }
+    }
+    
+    // Mostrar toast
+    mostrarToast(itemCarrito);
+
+    // Segunda actualización defensiva tras mostrar toast
+    if (typeof actualizarCarritoHeader === 'function') {
+        setTimeout(actualizarCarritoHeader, 50);
+    }
+    
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
+    modal.hide();
+    
+    // Scroll to top suave
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 300);
+}
+
+// Mostrar toast
+function mostrarToast(item) {
+    document.getElementById('toastProductoNombre').textContent = item.nombre;
+    document.getElementById('toastProductoDetalles').textContent = 
+        `Cantidad: ${item.cantidad} | Total: $${item.total.toFixed(2)}`;
+    
+    const toast = new bootstrap.Toast(document.getElementById('toastProductoAgregado'));
+    toast.show();
+}
+
+// Filtro por categoría
+document.addEventListener('DOMContentLoaded', function() {
+    // Asegurar sucursal_id inicial consistente
+    if (!localStorage.getItem('sucursal_id')) {
+        localStorage.setItem('sucursal_id', '1');
+    }
+    if (typeof actualizarCarritoHeader === 'function') {
+        actualizarCarritoHeader();
+    }
+    // Event listeners para categorías
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const categoria = this.dataset.categoria;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filtrar productos
+            document.querySelectorAll('.producto-item').forEach(producto => {
+                if (categoria === 'todas' || producto.dataset.categoria === categoria) {
+                    producto.style.display = 'block';
+                } else {
+                    producto.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Filtro por sucursal (si existe en localStorage)
+    const sucursalSeleccionada = localStorage.getItem('sucursal_id');
+    if (sucursalSeleccionada) {
+        document.querySelectorAll('.producto-item').forEach(producto => {
+            const sucursalesProducto = producto.dataset.sucursales.split(',');
+            if (!sucursalesProducto.includes(sucursalSeleccionada)) {
+                producto.style.display = 'none';
+            }
+        });
+        verificarProductosVisibles();
+    }
+});
+
+function verificarProductosVisibles(){
+    const items = Array.from(document.querySelectorAll('.producto-item'));
+    const visibles = items.filter(it => it.style.display !== 'none');
+    const msg = document.getElementById('sinProductosMsg');
+    if (visibles.length === 0){
+        msg.style.display = 'block';
+    } else {
+        msg.style.display = 'none';
+    }
+}
+
+function resetFiltrosCatalogo(){
+    // Mostrar todos ignorando sucursal (fallback para depuración)
+    document.querySelectorAll('.producto-item').forEach(p=> p.style.display='block');
+    document.querySelectorAll('.category-btn').forEach(b=> b.classList.remove('active'));
+    const first = document.querySelector('.category-btn[data-categoria="todas"]');
+    if(first) first.classList.add('active');
+    verificarProductosVisibles();
+}
+</script>
+{% endblock %}

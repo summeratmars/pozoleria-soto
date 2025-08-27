@@ -1,0 +1,582 @@
+{% extends "admin/base_admin_desktop.html" %}
+
+{% block title %}Gestión de Sucursales - Pozolería Soto{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_pages.css') }}">{% endblock %}
+
+{% block content %}
+<div class="admin-desktop-container">
+    <!-- Header con estadísticas -->
+    <div class="admin-page-header-desktop">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="page-icon-desktop me-3">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div>
+                        <h2 class="page-title-desktop mb-1">Gestión de Sucursales</h2>
+                        <p class="page-subtitle-desktop mb-0">Administra todas las ubicaciones de tu negocio</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="stats-mini-desktop">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-success">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ sucursales_activas }} Activas</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-mini-card bg-warning">
+                                <i class="fas fa-pause-circle"></i>
+                                <span>{{ sucursales_inactivas }} Inactivas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones principales -->
+    <div class="admin-actions-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0 me-3">Gestión de Ubicaciones</h5>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin.nueva_sucursal') }}" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Nueva Sucursal
+                                </a>
+                                <button class="btn btn-outline-primary" onclick="gestionarHorarios()">
+                                    <i class="fas fa-clock me-2"></i>Gestionar Horarios
+                                </button>
+                                <button class="btn btn-outline-info" onclick="exportarSucursales()">
+                                    <i class="fas fa-download me-2"></i>Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="input-group">
+                            <input type="text" class="form-control" 
+                                   placeholder="Buscar sucursal..." 
+                                   id="busquedaSucursalDesktop">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros avanzados desktop -->
+    <div class="admin-filters-desktop mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="filtroEstadoDesktop">
+                            <option value="">Todas</option>
+                            <option value="activa">Activas</option>
+                            <option value="inactiva">Inactivas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Productos</label>
+                        <select class="form-select" id="filtroProductos">
+                            <option value="">Todos</option>
+                            <option value="con_productos">Con productos</option>
+                            <option value="sin_productos">Sin productos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Pedidos</label>
+                        <select class="form-select" id="filtroPedidos">
+                            <option value="">Todos</option>
+                            <option value="con_pedidos">Con pedidos</option>
+                            <option value="sin_pedidos">Sin pedidos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Horario Actual</label>
+                        <select class="form-select" id="filtroHorario">
+                            <option value="">Todos</option>
+                            <option value="abierto">Abierto ahora</option>
+                            <option value="cerrado">Cerrado ahora</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista de sucursales desktop -->
+    <div class="admin-sucursales-desktop">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Lista de Sucursales ({{ sucursales|length }})
+                    </h5>
+                    <div class="view-controls">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary btn-sm active" 
+                                    onclick="cambiarVistaSucursal('cards')" id="btnVistaCardsSucursal">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    onclick="cambiarVistaSucursal('table')" id="btnVistaTablaSucursal">
+                                <i class="fas fa-table"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Vista en Cards (por defecto) -->
+                <div id="vistaCardsSucursal" class="sucursales-cards-desktop p-4">
+                    <div class="row g-4">
+                        {% for sucursal in sucursales %}
+                        <div class="col-lg-6 col-md-12 sucursal-item-desktop" 
+                             data-nombre="{{ sucursal.nombre.lower() }}"
+                             data-estado="{{ 'activa' if sucursal.activa else 'inactiva' }}"
+                             data-productos="{{ 'con_productos' if sucursal.menuitems else 'sin_productos' }}"
+                             data-pedidos="{{ 'con_pedidos' if sucursal.pedidos_clientes else 'sin_pedidos' }}"
+                             data-horario="{{ 'abierto' if sucursal.abierta_ahora else 'cerrado' }}">
+                            <div class="card sucursal-card-desktop h-100">
+                                <!-- Header de la sucursal -->
+                                <div class="card-header bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="sucursal-icon me-3">
+                                                <i class="fas fa-store text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">{{ sucursal.nombre }}</h5>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                                    {{ sucursal.direccion }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge {% if sucursal.activa %}bg-success{% else %}bg-danger{% endif %} mb-1">
+                                                {% if sucursal.activa %}Activa{% else %}Inactiva{% endif %}
+                                            </span>
+                                            <div>
+                                                <span class="badge {% if sucursal.abierta_ahora %}bg-info{% else %}bg-secondary{% endif %}">
+                                                    {% if sucursal.abierta_ahora %}Abierto{% else %}Cerrado{% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <!-- Información de contacto -->
+                                    <div class="contact-info-desktop mb-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Teléfono:</small>
+                                                <a href="tel:{{ sucursal.telefono }}" class="text-decoration-none">
+                                                    <strong>{{ sucursal.telefono }}</strong>
+                                                </a>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Estado:</small>
+                                                <strong class="{% if sucursal.activa %}text-success{% else %}text-danger{% endif %}">
+                                                    {% if sucursal.activa %}Operando{% else %}Suspendida{% endif %}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Estadísticas -->
+                                    <div class="sucursal-stats-desktop mb-3">
+                                        <div class="row g-2">
+                                            <div class="col-4">
+                                                <div class="stat-card-sucursal text-center">
+                                                    <i class="fas fa-utensils text-primary"></i>
+                                                    <div class="stat-number">{{ sucursal.menuitems|length }}</div>
+                                                    <small class="text-muted">Productos</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-card-sucursal text-center">
+                                                    <i class="fas fa-shopping-cart text-success"></i>
+                                                    <div class="stat-number">{{ sucursal.pedidos_clientes|length }}</div>
+                                                    <small class="text-muted">Pedidos</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-card-sucursal text-center">
+                                                    <i class="fas fa-clock text-info"></i>
+                                                    <div class="stat-status">
+                                                        {% if sucursal.abierta_ahora %}
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                        {% else %}
+                                                        <i class="fas fa-times-circle text-danger"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <small class="text-muted">Estado</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Horarios preview -->
+                                    {% if sucursal.horarios %}
+                                    <div class="horarios-preview-desktop">
+                                        <h6 class="small text-muted mb-2">Horarios de atención:</h6>
+                                        <div class="horarios-compactos">
+                                            {% for horario in sucursal.horarios[:2] %}
+                                            <small class="d-block text-muted">{{ horario }}</small>
+                                            {% endfor %}
+                                            {% if sucursal.horarios|length > 2 %}
+                                            <small class="text-primary">
+                                                <i class="fas fa-plus me-1"></i>Ver {{ sucursal.horarios|length - 2 }} más
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Acciones de la sucursal -->
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                        <a href="{{ url_for('admin.editar_sucursal', id=sucursal.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verDetallesSucursalDesktop({{ sucursal.id }})"
+                                                    title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm" 
+                                                    onclick="gestionarHorariosSucursal({{ sucursal.id }})"
+                                                    title="Gestionar horarios">
+                                                <i class="fas fa-clock"></i>
+                                            </button>
+                                            <button class="btn btn-outline-{% if sucursal.activa %}warning{% else %}success{% endif %} btn-sm" 
+                                                    onclick="toggleEstadoSucursalDesktop({{ sucursal.id }}, {{ 'false' if sucursal.activa else 'true' }})"
+                                                    title="{% if sucursal.activa %}Desactivar{% else %}Activar{% endif %}">
+                                                <i class="fas fa-{% if sucursal.activa %}pause{% else %}play{% endif %}"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Vista en Tabla -->
+                <div id="vistaTablaSucursal" class="sucursales-tabla-desktop" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="tablaSucursalesDesktop">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="20%">Sucursal</th>
+                                    <th width="25%">Dirección</th>
+                                    <th width="12%">Teléfono</th>
+                                    <th width="10%">Productos</th>
+                                    <th width="10%">Pedidos</th>
+                                    <th width="8%">Estado</th>
+                                    <th width="10%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sucursal in sucursales %}
+                                <tr class="sucursal-row-desktop" 
+                                    data-nombre="{{ sucursal.nombre.lower() }}"
+                                    data-estado="{{ 'activa' if sucursal.activa else 'inactiva' }}"
+                                    data-productos="{{ 'con_productos' if sucursal.menuitems else 'sin_productos' }}"
+                                    data-pedidos="{{ 'con_pedidos' if sucursal.pedidos_clientes else 'sin_pedidos' }}"
+                                    data-horario="{{ 'abierto' if sucursal.abierta_ahora else 'cerrado' }}">
+                                    <td>
+                                        <span class="badge bg-light text-dark">#{{ sucursal.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="sucursal-icon-small me-2">
+                                                <i class="fas fa-store text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ sucursal.nombre }}</div>
+                                                <small class="text-muted">
+                                                    {% if sucursal.abierta_ahora %}
+                                                    <i class="fas fa-circle text-success me-1"></i>Abierto
+                                                    {% else %}
+                                                    <i class="fas fa-circle text-danger me-1"></i>Cerrado
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ sucursal.direccion }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="tel:{{ sucursal.telefono }}" class="text-decoration-none">
+                                            {{ sucursal.telefono }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ sucursal.menuitems|length }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ sucursal.pedidos_clientes|length }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if sucursal.activa %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if sucursal.activa %}Activa{% else %}Inactiva{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.editar_sucursal', id=sucursal.id) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="verDetallesSucursalDesktop({{ sucursal.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-{% if sucursal.activa %}warning{% else %}success{% endif %} btn-sm" 
+                                                    onclick="toggleEstadoSucursalDesktop({{ sucursal.id }}, {{ 'false' if sucursal.activa else 'true' }})">
+                                                <i class="fas fa-{% if sucursal.activa %}pause{% else %}play{% endif %}"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    {% if not sucursales %}
+    <div class="empty-state-desktop text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-store fa-5x text-muted mb-4"></i>
+                <h4 class="text-muted mb-2">No hay sucursales registradas</h4>
+                <p class="text-muted">Agrega sucursales para expandir tu negocio y llegar a más clientes</p>
+                <a href="{{ url_for('admin.nueva_sucursal') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Agregar Primera Sucursal
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de detalles de sucursal -->
+<div class="modal fade" id="modalDetallesSucursalDesktop" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-store me-2"></i>
+                    Detalles de la Sucursal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDetallesSucursalDesktop">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+ </div>
+
+<script>
+// Inicializar DataTable para vista de tabla
+$(document).ready(function() {
+    $('#tablaSucursalesDesktop').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[ 1, "asc" ]], // Ordenar por nombre
+        "columnDefs": [
+            { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
+        ]
+    });
+});
+
+// Cambiar entre vista cards y tabla
+function cambiarVistaSucursal(vista) {
+    const vistaCards = document.getElementById('vistaCardsSucursal');
+    const vistaTabla = document.getElementById('vistaTablaSucursal');
+    const btnCards = document.getElementById('btnVistaCardsSucursal');
+    const btnTabla = document.getElementById('btnVistaTablaSucursal');
+    
+    if (vista === 'cards') {
+        vistaCards.style.display = 'block';
+        vistaTabla.style.display = 'none';
+        btnCards.classList.add('active');
+        btnTabla.classList.remove('active');
+    } else {
+        vistaCards.style.display = 'none';
+        vistaTabla.style.display = 'block';
+        btnCards.classList.remove('active');
+        btnTabla.classList.add('active');
+    }
+}
+
+// Filtros
+document.getElementById('filtroEstadoDesktop').addEventListener('change', filtrarSucursalesDesktop);
+document.getElementById('filtroProductos').addEventListener('change', filtrarSucursalesDesktop);
+document.getElementById('filtroPedidos').addEventListener('change', filtrarSucursalesDesktop);
+document.getElementById('filtroHorario').addEventListener('change', filtrarSucursalesDesktop);
+document.getElementById('busquedaSucursalDesktop').addEventListener('input', filtrarSucursalesDesktop);
+
+function filtrarSucursalesDesktop() {
+    const filtroEstado = document.getElementById('filtroEstadoDesktop').value;
+    const filtroProductos = document.getElementById('filtroProductos').value;
+    const filtroPedidos = document.getElementById('filtroPedidos').value;
+    const filtroHorario = document.getElementById('filtroHorario').value;
+    const busqueda = document.getElementById('busquedaSucursalDesktop').value.toLowerCase();
+    
+    // Filtrar vista cards
+    const sucursalesCards = document.querySelectorAll('.sucursal-item-desktop');
+    sucursalesCards.forEach(sucursal => {
+        let mostrar = aplicarFiltrosSucursal(sucursal, filtroEstado, filtroProductos, filtroPedidos, filtroHorario, busqueda);
+        sucursal.style.display = mostrar ? 'block' : 'none';
+    });
+    
+    // Filtrar vista tabla
+    const sucursalesTabla = document.querySelectorAll('.sucursal-row-desktop');
+    sucursalesTabla.forEach(sucursal => {
+        let mostrar = aplicarFiltrosSucursal(sucursal, filtroEstado, filtroProductos, filtroPedidos, filtroHorario, busqueda);
+        sucursal.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function aplicarFiltrosSucursal(elemento, estado, productos, pedidos, horario, busqueda) {
+    const elEstado = elemento.dataset.estado;
+    const elProductos = elemento.dataset.productos;
+    const elPedidos = elemento.dataset.pedidos;
+    const elHorario = elemento.dataset.horario;
+    const elNombre = elemento.dataset.nombre;
+    
+    let mostrar = true;
+    
+    if (estado && elEstado !== estado) mostrar = false;
+    if (productos && elProductos !== productos) mostrar = false;
+    if (pedidos && elPedidos !== pedidos) mostrar = false;
+    if (horario && elHorario !== horario) mostrar = false;
+    if (busqueda && !elNombre.includes(busqueda)) mostrar = false;
+    
+    return mostrar;
+}
+
+function verDetallesSucursalDesktop(sucursalId) {
+    fetch(`/admin/sucursal/${sucursalId}/detalles`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('contenidoDetallesSucursalDesktop').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalDetallesSucursalDesktop')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar los detalles', 'error');
+        });
+}
+
+function toggleEstadoSucursalDesktop(sucursalId, nuevoEstado) {
+    const accion = nuevoEstado === 'true' ? 'activar' : 'desactivar';
+    
+    if (confirm(`¿Estás seguro de que deseas ${accion} esta sucursal?\n\nEsto afectará la disponibilidad de sus productos.`)) {
+        fetch(`/admin/sucursal/${sucursalId}/toggle-estado`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ activa: nuevoEstado === 'true' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Sucursal ${accion}da correctamente`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error al cambiar el estado de la sucursal', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cambiar el estado de la sucursal', 'error');
+        });
+    }
+}
+
+function gestionarHorarios() {
+    // Redirige a la pantalla de gestionar horarios de la primera sucursal disponible
+    const firstBtn = document.querySelector('[data-sucursal-id]');
+    let sucursalId = null;
+    if (firstBtn) {
+        sucursalId = firstBtn.getAttribute('data-sucursal-id');
+    } else {
+        // fallback: buscar primer enlace de gestionar horarios en la tabla
+        const gestionarLink = document.querySelector('a[href*="/sucursales/"][href*="/horarios"]');
+        if (gestionarLink) {
+            const match = gestionarLink.getAttribute('href').match(/sucursales\/(\d+)\/horarios/);
+            if (match) sucursalId = match[1];
+        }
+    }
+    if (sucursalId) {
+        window.location.href = `/admin/sucursales/${sucursalId}/horarios`;
+    } else {
+        alert('No se encontró ninguna sucursal para gestionar horarios.');
+    }
+}
+
+function gestionarHorariosSucursal(sucursalId) {
+    window.location.href = `/admin/sucursales/${sucursalId}/horarios`;
+}
+
+function exportarSucursales() {
+    window.location.href = '/admin/sucursales/exportar';
+}
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'info' ? 'alert-info' : 'alert-danger';
+    const alert = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alert);
+    
+    setTimeout(() => {
+        const alertElement = document.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

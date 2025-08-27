@@ -1,0 +1,1575 @@
+{% extends "base_desktop.html" %}
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section Desktop Professional -->
+    <div class="hero-desktop-professional">
+        <div class="hero-background-overlay"></div>
+        <div class="hero-content-wrapper">
+            <div class="container">
+                <div class="row align-items-center min-vh-100">
+                    <div class="col-lg-6">
+                        <div class="hero-text-content">
+                            <div class="hero-badge">
+                                <i class="fas fa-award me-2"></i>
+                                Auténtico Sabor Mexicano
+                            </div>
+                            <h1 class="hero-main-title">
+                                Pozolería <span class="title-highlight">Soto</span>
+                            </h1>
+                            <p class="hero-description">
+                                Descubre el sabor auténtico del pozole tradicional mexicano, 
+                                preparado con recetas familiares transmitidas de generación en generación. 
+                                Ingredientes frescos, calidad premium y entrega a domicilio.
+                            </p>
+                            
+                            <div class="hero-features-desktop">
+                                <div class="feature-pill">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Entrega en 30 min</span>
+                                </div>
+                                <div class="feature-pill">
+                                    <i class="fas fa-leaf"></i>
+                                    <span>Ingredientes frescos</span>
+                                </div>
+                                <div class="feature-pill">
+                                    <i class="fas fa-heart"></i>
+                                    <span>Hecho con amor</span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-actions">
+                                <a href="{{ url_for('catalogo') }}" class="btn btn-hero-primary">
+                                    <i class="fas fa-utensils me-2"></i>
+                                    Ordenar Ahora
+                                </a>
+                                <a href="{{ url_for('consultar_pedido') }}" class="btn btn-hero-secondary">
+                                    <i class="fas fa-search me-2"></i>
+                                    Consultar Pedido
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="hero-visual-content">
+                            <div class="hero-image-container">
+                                <div class="hero-decoration-bg"></div>
+                                <img src="{{ url_for('static', filename='logo_soto.png') }}" 
+                                     alt="Pozolería Soto" 
+                                     class="hero-main-image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div class="hero-image-fallback" style="display: none;">
+                                    <i class="fas fa-utensils"></i>
+                                    <h3>Pozolería Soto</h3>
+                                    <p>Auténtico Sabor Mexicano</p>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-floating-elements">
+                                <div class="floating-element floating-1">
+                                    <i class="fas fa-star"></i>
+                                    <span>+1000 clientes satisfechos</span>
+                                </div>
+                                <div class="floating-element floating-2">
+                                    <i class="fas fa-truck"></i>
+                                    <span>Entrega gratuita</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos Destacados Desktop Professional -->
+    <section class="productos-destacados-desktop">
+        <div class="container py-5">
+            <div class="section-header-desktop text-center mb-5">
+                <div class="section-icon-wrapper">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h2 class="section-main-title">Productos Destacados</h2>
+                <p class="section-subtitle">Descubre nuestros pozoles más populares y deliciosos</p>
+                <div class="section-separator"></div>
+            </div>
+            
+            <div class="productos-desktop-grid">
+                {% for producto in productos_destacados %}
+                <div class="producto-desktop-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="card product-card-premium">
+                        <div class="product-image-wrapper">
+                            {% if producto.imagen %}
+                                <img src="{{ url_for('static', filename='uploads/' + producto.imagen) }}" 
+                                     class="product-main-image" 
+                                     alt="{{ producto.nombre }}"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-image-placeholder-desktop" style="display: none;">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <div class="placeholder-text">
+                                        <h5>{{ producto.nombre }}</h5>
+                                        <p>Imagen no disponible</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="product-image-placeholder-desktop">
+                                    <div class="placeholder-icon">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <div class="placeholder-text">
+                                        <h5>{{ producto.nombre }}</h5>
+                                        <p>Delicioso pozole tradicional</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="product-overlay">
+                                <div class="overlay-content">
+                                    <a href="{{ url_for('catalogo') }}" class="btn btn-overlay-action">
+                                        <i class="fas fa-eye me-2"></i>Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="product-featured-badge">
+                                <i class="fas fa-star"></i>
+                                <span>Destacado</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body product-info-desktop">
+                            <div class="product-header">
+                                <h4 class="product-name">{{ producto.nombre }}</h4>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span class="rating-text">(4.8)</span>
+                                </div>
+                            </div>
+                            
+                            <p class="product-description-desktop">
+                                {{ producto.descripcion[:120] if producto.descripcion else 'Exquisito pozole tradicional preparado con ingredientes frescos y seleccionados, siguiendo recetas auténticas transmitidas de generación en generación.' }}
+                                {% if producto.descripcion and producto.descripcion|length > 120 %}...{% endif %}
+                            </p>
+                            
+                            <div class="product-features">
+                                <div class="feature-tag">
+                                    <i class="fas fa-leaf"></i>
+                                    <span>Ingredientes frescos</span>
+                                </div>
+                                <div class="feature-tag">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Recién preparado</span>
+                                </div>
+                            </div>
+                            
+                            <div class="product-footer">
+                                <div class="price-section-desktop">
+                                    <span class="price-label">Desde</span>
+                                    <span class="price-amount">${{ "%.0f"|format(producto.precio) }}</span>
+                                    <span class="price-currency">MXN</span>
+                                </div>
+                                
+                                <div class="product-actions-desktop">
+                                    <a href="{{ url_for('catalogo') }}" class="btn btn-add-to-cart">
+                                        <i class="fas fa-shopping-cart me-2"></i>
+                                        Agregar al Carrito
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{{ url_for('catalogo') }}" class="btn btn-view-all-menu">
+                    Ver Menú Completo
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categorías Desktop Professional -->
+    {% if categorias %}
+    <section class="categorias-desktop-section">
+        <div class="container py-5">
+            <div class="section-header-desktop text-center mb-5">
+                <div class="section-icon-wrapper">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <h2 class="section-main-title">Nuestras Especialidades</h2>
+                <p class="section-subtitle">Explora todas nuestras categorías de deliciosos platillos</p>
+                <div class="section-separator"></div>
+            </div>
+            
+            <div class="categorias-desktop-grid">
+                {% for categoria in categorias %}
+                <div class="categoria-desktop-item" data-aos="zoom-in" data-aos-delay="{{ loop.index * 150 }}">
+                    <a href="{{ url_for('catalogo') }}" class="categoria-link-desktop">
+                        <div class="categoria-card-desktop">
+                            <div class="categoria-icon-bg">
+                                <div class="categoria-icon-circle">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                            </div>
+                            <div class="categoria-content-desktop">
+                                <h4 class="categoria-title">{{ categoria.nombre }}</h4>
+                                <p class="categoria-description">
+                                    Descubre nuestra selección de {{ categoria.nombre.lower() }}
+                                </p>
+                                <div class="categoria-stats">
+                                    <span class="stats-item">
+                                        <i class="fas fa-utensils me-1"></i>
+                                        {{ categoria.menu_items|length }} productos
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="categoria-arrow-desktop">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Establecimientos Desktop Professional -->
+    <section class="establecimientos-desktop-section">
+        <div class="container py-5">
+            <div class="section-header-desktop text-center mb-5">
+                <div class="section-icon-wrapper">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h2 class="section-main-title">Nuestras Ubicaciones</h2>
+                <p class="section-subtitle">Visítanos en cualquiera de nuestros establecimientos</p>
+                <div class="section-separator"></div>
+            </div>
+            
+            <div class="establecimientos-desktop-grid">
+                {% for establecimiento in establecimientos %}
+                <div class="establecimiento-desktop-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 200 }}">
+                    <div class="card establecimiento-card-premium">
+                        <div class="establecimiento-header-desktop">
+                            <div class="establecimiento-status-bar">
+                                <div class="status-indicator {% if establecimiento.abierta_ahora %}status-open{% else %}status-closed{% endif %}">
+                                    <div class="status-dot"></div>
+                                    <span class="status-text">
+                                        {% if establecimiento.abierta_ahora %}Abierto Ahora{% else %}Cerrado{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <h4 class="establecimiento-name-desktop">{{ establecimiento.nombre }}</h4>
+                        </div>
+                        
+                        <div class="card-body establecimiento-body-desktop">
+                            <div class="establecimiento-info-grid">
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label>Dirección:</label>
+                                        <span>{{ establecimiento.direccion }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label>Teléfono:</label>
+                                        <a href="tel:{{ establecimiento.telefono }}">{{ establecimiento.telefono }}</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="establecimiento-actions-desktop">
+                                <button class="btn btn-horarios-toggle" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#horariosDesktop{{ establecimiento.id }}" 
+                                        aria-expanded="false">
+                                    <i class="fas fa-clock me-2"></i>
+                                    Ver Horarios
+                                </button>
+                                
+                                <a href="tel:{{ establecimiento.telefono }}" class="btn btn-llamar-desktop">
+                                    <i class="fas fa-phone me-2"></i>
+                                    Llamar Ahora
+                                </a>
+                            </div>
+                            
+                            <div class="collapse mt-3" id="horariosDesktop{{ establecimiento.id }}">
+                                <div class="horarios-desktop-container">
+                                    <h6 class="horarios-title">
+                                        <i class="fas fa-clock me-2"></i>Horarios de Atención
+                                    </h6>
+                                    <div class="horarios-grid-desktop">
+                                        {% for horario in establecimiento.horarios %}
+                                        <div class="horario-item-desktop">
+                                            <i class="fas fa-circle horario-bullet"></i>
+                                            <span>{{ horario }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter y CTA Final Desktop -->
+    <section class="newsletter-cta-desktop">
+        <div class="cta-background-desktop">
+            <div class="cta-overlay-desktop"></div>
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="cta-content-desktop">
+                            <div class="cta-icon-desktop">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <h3 class="cta-title-desktop">
+                                ¿Listo para una experiencia gastronómica única?
+                            </h3>
+                            <p class="cta-description-desktop">
+                                Únete a miles de clientes satisfechos que ya disfrutan del auténtico 
+                                sabor del pozole tradicional mexicano. Ordena ahora y recibe tu pedido 
+                                en la comodidad de tu hogar.
+                            </p>
+                            
+                            <div class="cta-features-list">
+                                <div class="cta-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Entrega rápida y segura</span>
+                                </div>
+                                <div class="cta-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Ingredientes 100% frescos</span>
+                                </div>
+                                <div class="cta-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Satisfacción garantizada</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="cta-actions-desktop">
+                            <div class="action-card">
+                                <h4 class="action-title">Ordena Ahora</h4>
+                                <p class="action-description">
+                                    Explora nuestro menú completo y realiza tu pedido
+                                </p>
+                                <a href="{{ url_for('catalogo') }}" class="btn btn-cta-primary-desktop">
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    Ver Menú Completo
+                                </a>
+                            </div>
+                            
+                            <div class="action-card">
+                                <h4 class="action-title">Consulta tu Pedido</h4>
+                                <p class="action-description">
+                                    Revisa el estado de tu orden en tiempo real
+                                </p>
+                                <a href="{{ url_for('consultar_pedido') }}" class="btn btn-cta-secondary-desktop">
+                                    <i class="fas fa-search me-2"></i>
+                                    Consultar Estado
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+/* Variables CSS para Desktop */
+:root {
+    --pozoleria-orange: #e97c1a;
+    --pozoleria-orange-dark: #d86b1a;
+    --pozoleria-orange-light: #f4a261;
+    --pozoleria-red: #e63946;
+    --pozoleria-green: #2a9d8f;
+    --pozoleria-cream: #f1faee;
+    --pozoleria-dark: #264653;
+    --pozoleria-gold: #f4d03f;
+}
+
+/* Hero Section Professional Desktop */
+.hero-desktop-professional {
+    position: relative;
+    background: linear-gradient(135deg, var(--pozoleria-orange) 0%, var(--pozoleria-orange-dark) 50%, var(--pozoleria-red) 100%);
+    overflow: hidden;
+}
+
+.hero-background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0,0,0,0.1) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.hero-content-wrapper {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.hero-text-content {
+    padding: 2rem 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    animation: fadeInDown 1s ease-out;
+}
+
+.hero-main-title {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    animation: fadeInLeft 1s ease-out 0.3s both;
+}
+
+.title-highlight {
+    background: linear-gradient(45deg, var(--pozoleria-gold), #fff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(244, 208, 63, 0.5);
+}
+
+.hero-description {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    opacity: 0.95;
+    animation: fadeInLeft 1s ease-out 0.6s both;
+}
+
+.hero-features-desktop {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease-out 0.9s both;
+}
+
+.feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.feature-pill:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease-out 1.2s both;
+}
+
+.btn-hero-primary, .btn-hero-secondary {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.btn-hero-primary {
+    background: linear-gradient(45deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+    color: var(--pozoleria-orange);
+    border: none;
+}
+
+.btn-hero-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    color: var(--pozoleria-orange-dark);
+}
+
+.btn-hero-secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+}
+
+.btn-hero-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.8);
+    color: white;
+    transform: translateY(-3px);
+}
+
+.hero-visual-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.hero-image-container {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-decoration-bg {
+    position: absolute;
+    top: -50px;
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    background: 
+        radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 4s infinite;
+}
+
+.hero-main-image {
+    max-width: 100%;
+    max-height: 500px;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+    animation: fadeInRight 1s ease-out 0.6s both;
+}
+
+.hero-image-fallback {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+}
+
+.hero-image-fallback i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.hero-image-fallback h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero-floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.floating-element {
+    position: absolute;
+    background: rgba(255,255,255,0.9);
+    color: var(--pozoleria-dark);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-1 {
+    top: 20%;
+    right: -20px;
+    animation-delay: 0s;
+}
+
+.floating-2 {
+    bottom: 30%;
+    left: -30px;
+    animation-delay: 3s;
+}
+
+.floating-element i {
+    color: var(--pozoleria-orange);
+    font-size: 1.2rem;
+}
+
+/* Productos Destacados Desktop */
+.productos-destacados-desktop {
+    background: var(--pozoleria-cream);
+}
+
+.section-header-desktop {
+    margin-bottom: 4rem;
+}
+
+.section-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(45deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    color: white;
+    font-size: 2rem;
+    box-shadow: 0 10px 30px rgba(233, 124, 26, 0.3);
+}
+
+.section-main-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--pozoleria-dark);
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+.section-separator {
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(45deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+.productos-desktop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 30px;
+}
+
+.producto-desktop-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.producto-desktop-card:nth-child(1) { animation-delay: 0.1s; }
+.producto-desktop-card:nth-child(2) { animation-delay: 0.3s; }
+.producto-desktop-card:nth-child(3) { animation-delay: 0.5s; }
+
+.product-card-premium {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    transition: all 0.4s ease;
+    background: white;
+    height: 100%;
+}
+
+.product-card-premium:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+}
+
+.product-image-wrapper {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+}
+
+.product-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.4s ease;
+}
+
+.product-card-premium:hover .product-main-image {
+    transform: scale(1.1);
+}
+
+.product-image-placeholder-desktop {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--pozoleria-orange-light), var(--pozoleria-orange));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.placeholder-text h5 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.placeholder-text p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(233, 124, 26, 0.9), rgba(230, 57, 70, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-card-premium:hover .product-overlay {
+    opacity: 1;
+}
+
+.btn-overlay-action {
+    background: white;
+    color: var(--pozoleria-orange);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.product-card-premium:hover .btn-overlay-action {
+    transform: translateY(0);
+}
+
+.btn-overlay-action:hover {
+    background: var(--pozoleria-cream);
+    color: var(--pozoleria-orange-dark);
+}
+
+.product-featured-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--pozoleria-gold);
+    color: var(--pozoleria-dark);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 5px 15px rgba(244, 208, 63, 0.4);
+}
+
+.product-info-desktop {
+    padding: 2rem;
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.product-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pozoleria-dark);
+    margin: 0;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--pozoleria-gold);
+    font-size: 0.9rem;
+}
+
+.rating-text {
+    color: #6c757d;
+    margin-left: 5px;
+    font-size: 0.8rem;
+}
+
+.product-description-desktop {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.product-features {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.feature-tag {
+    background: rgba(233, 124, 26, 0.1);
+    color: var(--pozoleria-orange);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(233, 124, 26, 0.2);
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.price-section-desktop {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.price-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.price-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--pozoleria-green);
+}
+
+.price-currency {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.btn-add-to-cart {
+    background: linear-gradient(45deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(233, 124, 26, 0.3);
+}
+
+.btn-add-to-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233, 124, 26, 0.4);
+    color: white;
+}
+
+.btn-view-all-menu {
+    background: var(--pozoleria-dark);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(38, 70, 83, 0.3);
+}
+
+.btn-view-all-menu:hover {
+    background: #1e3a42;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(38, 70, 83, 0.4);
+    color: white;
+}
+
+/* Categorías Desktop */
+.categorias-desktop-section {
+    background: white;
+}
+
+.categorias-desktop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.categoria-desktop-item {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: zoomIn 0.6s ease-out forwards;
+}
+
+.categoria-link-desktop {
+    text-decoration: none;
+    color: inherit;
+}
+
+.categoria-card-desktop {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    transition: all 0.4s ease;
+    border-left: 5px solid var(--pozoleria-orange);
+    position: relative;
+    overflow: hidden;
+}
+
+.categoria-card-desktop::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(233, 124, 26, 0.1), transparent);
+    transition: right 0.6s ease;
+}
+
+.categoria-card-desktop:hover::before {
+    right: 100%;
+}
+
+.categoria-card-desktop:hover {
+    transform: translateX(15px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    border-left-color: var(--pozoleria-orange-dark);
+}
+
+.categoria-icon-bg {
+    position: relative;
+    margin-right: 25px;
+}
+
+.categoria-icon-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(45deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(233, 124, 26, 0.3);
+}
+
+.categoria-card-desktop:hover .categoria-icon-circle {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 12px 35px rgba(233, 124, 26, 0.4);
+}
+
+.categoria-content-desktop {
+    flex-grow: 1;
+}
+
+.categoria-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--pozoleria-dark);
+    margin-bottom: 8px;
+}
+
+.categoria-description {
+    color: #6c757d;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.categoria-stats {
+    display: flex;
+    align-items: center;
+}
+
+.stats-item {
+    background: rgba(233, 124, 26, 0.1);
+    color: var(--pozoleria-orange);
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.categoria-arrow-desktop {
+    color: var(--pozoleria-orange);
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.categoria-card-desktop:hover .categoria-arrow-desktop {
+    transform: translateX(5px);
+}
+
+/* Establecimientos Desktop */
+.establecimientos-desktop-section {
+    background: var(--pozoleria-cream);
+}
+
+.establecimientos-desktop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+.establecimiento-desktop-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.establecimiento-card-premium {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    background: white;
+    transition: all 0.4s ease;
+}
+
+.establecimiento-card-premium:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+}
+
+.establecimiento-header-desktop {
+    background: linear-gradient(135deg, var(--pozoleria-dark), #2c5f66);
+    color: white;
+    padding: 2rem;
+    position: relative;
+}
+
+.establecimiento-status-bar {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.2);
+    padding: 8px 15px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-open .status-dot {
+    background: var(--pozoleria-green);
+    box-shadow: 0 0 10px rgba(42, 157, 143, 0.6);
+}
+
+.status-closed .status-dot {
+    background: var(--pozoleria-red);
+    box-shadow: 0 0 10px rgba(230, 57, 70, 0.6);
+}
+
+.establecimiento-name-desktop {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    padding-right: 120px;
+}
+
+.establecimiento-body-desktop {
+    padding: 2rem;
+}
+
+.establecimiento-info-grid {
+    margin-bottom: 2rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+    padding: 15px;
+    background: rgba(233, 124, 26, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid var(--pozoleria-orange);
+}
+
+.info-icon {
+    color: var(--pozoleria-orange);
+    font-size: 1.3rem;
+    margin-top: 2px;
+}
+
+.info-content {
+    flex-grow: 1;
+}
+
+.info-content label {
+    display: block;
+    font-weight: 600;
+    color: var(--pozoleria-dark);
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.info-content span,
+.info-content a {
+    color: #6c757d;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.info-content a:hover {
+    color: var(--pozoleria-orange);
+}
+
+.establecimiento-actions-desktop {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.btn-horarios-toggle,
+.btn-llamar-desktop {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.btn-horarios-toggle {
+    background: var(--pozoleria-orange);
+    color: white;
+    border: none;
+}
+
+.btn-horarios-toggle:hover {
+    background: var(--pozoleria-orange-dark);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-llamar-desktop {
+    background: var(--pozoleria-green);
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.btn-llamar-desktop:hover {
+    background: #238a7a;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.horarios-desktop-container {
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(233, 124, 26, 0.1);
+}
+
+.horarios-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--pozoleria-dark);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.horarios-grid-desktop {
+    display: grid;
+    gap: 8px;
+}
+
+.horario-item-desktop {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    color: var(--pozoleria-dark);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.horario-item-desktop:last-child {
+    border-bottom: none;
+}
+
+.horario-bullet {
+    color: var(--pozoleria-orange);
+    font-size: 0.6rem;
+}
+
+/* Newsletter CTA Desktop */
+.newsletter-cta-desktop {
+    position: relative;
+    min-height: 600px;
+}
+
+.cta-background-desktop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--pozoleria-dark) 0%, var(--pozoleria-green) 50%, var(--pozoleria-orange) 100%);
+    display: flex;
+    align-items: center;
+}
+
+.cta-overlay-desktop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1)),
+        radial-gradient(circle at 30% 70%, rgba(233, 124, 26, 0.2) 0%, transparent 50%);
+}
+
+.cta-content-desktop {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.cta-icon-desktop {
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.cta-title-desktop {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+}
+
+.cta-description-desktop {
+    font-size: 1.2rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.cta-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cta-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.cta-feature i {
+    color: var(--pozoleria-green);
+    font-size: 1.3rem;
+}
+
+.cta-actions-desktop {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.action-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.action-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--pozoleria-dark);
+    margin-bottom: 10px;
+}
+
+.action-description {
+    color: #6c757d;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.btn-cta-primary-desktop,
+.btn-cta-secondary-desktop {
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    width: 100%;
+}
+
+.btn-cta-primary-desktop {
+    background: linear-gradient(45deg, var(--pozoleria-orange), var(--pozoleria-orange-light));
+    color: white;
+    box-shadow: 0 8px 25px rgba(233, 124, 26, 0.3);
+}
+
+.btn-cta-primary-desktop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(233, 124, 26, 0.4);
+    color: white;
+}
+
+.btn-cta-secondary-desktop {
+    background: var(--pozoleria-dark);
+    color: white;
+    box-shadow: 0 8px 25px rgba(38, 70, 83, 0.3);
+}
+
+.btn-cta-secondary-desktop:hover {
+    background: #1e3a42;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(38, 70, 83, 0.4);
+    color: white;
+}
+
+/* Animaciones Desktop */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Responsive Desktop */
+@media (max-width: 1200px) {
+    .hero-main-title {
+        font-size: 3rem;
+    }
+    
+    .section-main-title {
+        font-size: 2.5rem;
+    }
+    
+    .productos-desktop-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .hero-main-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-actions {
+        justify-content: center;
+    }
+    
+    .floating-element {
+        display: none;
+    }
+    
+    .cta-title-desktop {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-features-desktop {
+        justify-content: center;
+    }
+    
+    .productos-desktop-grid,
+    .categorias-desktop-grid,
+    .sucursales-desktop-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-main-title {
+        font-size: 2rem;
+    }
+    
+    .product-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-add-to-cart {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+</style>
+{% endblock %}

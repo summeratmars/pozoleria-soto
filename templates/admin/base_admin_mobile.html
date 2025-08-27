@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel Admin - Pozolería Soto{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS Admin Mobile -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_mobile.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Admin Navbar Mobile -->
+    <nav class="navbar navbar-expand-lg admin-navbar-mobile">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">
+                <i class="fas fa-shield-alt me-2"></i>Admin Panel
+            </a>
+            
+            <div class="d-flex align-items-center">
+                <!-- User Info -->
+                {% if session.admin_nombre %}
+                <div class="me-3">
+                    <small class="text-white">
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ session.admin_nombre }}
+                    </small>
+                </div>
+                {% endif %}
+                
+                <!-- Toggle Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavMobile">
+                    <i class="fas fa-bars text-white"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div class="collapse admin-menu-mobile" id="adminNavMobile">
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i>Dashboard
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_pedidos_clientes') }}">
+                <i class="fas fa-shopping-cart"></i>Pedidos
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_menu') }}">
+                <i class="fas fa-utensils"></i>Menú
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_categorias') }}">
+                <i class="fas fa-tags"></i>Categorías
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_sucursales') }}">
+                <i class="fas fa-store"></i>Sucursales
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_administradores') }}">
+                <i class="fas fa-users-cog"></i>Administradores
+            </a>
+            <a class="nav-link" href="{{ url_for('admin.listar_sucursales') }}">
+                <i class="fas fa-clock"></i>Horarios
+            </a>
+            <div class="nav-link border-top mt-2 pt-3">
+                <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-danger btn-sm w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="content-mobile">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Toast Container -->
+    <div class="toast-container-mobile"></div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+        <!-- JS común admin -->
+        <script src="{{ url_for('static', filename='js/admin_common.js') }}"></script>
+        <script>
+            // Auto-hide menú mobile tras click
+            document.querySelectorAll('#adminNavMobile .nav-link').forEach(link=>{
+                if(!link.querySelector('.btn')){
+                    link.addEventListener('click', ()=>{
+                         const collapse = new bootstrap.Collapse(document.getElementById('adminNavMobile'));
+                         collapse.hide();
+                    });
+                }
+            });
+        </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

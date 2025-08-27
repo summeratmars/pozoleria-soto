@@ -1,0 +1,829 @@
+{# Parcial: listar_menu (sin extends) #}
+<div class="container-fluid px-3 px-md-4">
+    <!-- Header Responsivo -->
+    <div class="row align-items-center mb-4">
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <h1 class="h3 mb-0 text-gray-800 d-flex align-items-center">
+                <i class="fas fa-utensils me-2" style="color: var(--pozoleria-orange);"></i>
+                <span class="d-none d-sm-inline">Gestión de Menú</span>
+                <span class="d-sm-none">Menú</span>
+            </h1>
+            <p class="text-muted mb-0 small">Administra los productos del restaurante</p>
+        </div>
+        <div class="col-12 col-md-4">
+            {% if session.admin_nombre %}
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="badge bg-primary px-3 py-2 d-none d-md-inline" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle me-1"></i>
+                    {{ session.admin_nombre }}
+                </span>
+                <!-- Botón nuevo producto móvil -->
+                <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success btn-sm w-100 w-md-auto">
+                    <i class="fas fa-plus me-1"></i>
+                    <span class="d-none d-sm-inline">Nuevo Producto</span>
+                    <span class="d-sm-none">Nuevo</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Estadísticas Responsivas -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-success shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Total Productos</span>
+                                <span class="d-md-none">Productos</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ menu|length }}</div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-info shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Precio Promedio</span>
+                                <span class="d-md-none">Promedio</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${% if menu %}{{ "%.0f"|format((menu|sum(attribute='precio'))/menu|length) }}{% else %}0{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-calculator fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-warning shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                <span class="d-none d-md-inline">Con Imagen</span>
+                                <span class="d-md-none">Imágenes</span>
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ menu|selectattr('imagen')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-image fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-left-primary shadow h-100 py-2 stats-card">
+                <div class="card-body p-3">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Categorías
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ menu|map(attribute='categoria')|unique|list|length if menu else 0 }}
+                            </div>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="fas fa-tags fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista móvil: Cards de productos -->
+    <div class="d-block d-lg-none mobile-menu-container">
+        {% if menu %}
+            <!-- Filtros móvil -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <select class="form-select form-select-sm" id="filtroCategoria" onchange="filtrarPorCategoria()">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in menu|map(attribute='categoria')|unique %}
+                            {% if categoria %}
+                                <option value="{{ categoria.nombre }}">{{ categoria.nombre }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-6">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Buscar producto..." 
+                               id="buscadorProducto" onkeyup="buscarProducto()">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {% for m in menu %}
+            <div class="card mb-3 product-card" data-categoria="{{ m.categoria.nombre if m.categoria else '' }}" 
+                 data-nombre="{{ m.nombre.lower() }}">
+                <div class="row g-0">
+                    <!-- Imagen del producto -->
+                    <div class="col-4">
+                        <div class="product-image-container">
+                            {% if m.imagen %}
+                                <img src="{{ m.imagen }}" alt="{{ m.nombre }}" class="product-image">
+                            {% else %}
+                                <div class="product-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                            <!-- Badge de precio -->
+                            <div class="price-badge">
+                                ${{ "%.0f"|format(m.precio) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información del producto -->
+                    <div class="col-8">
+                        <div class="card-body p-3">
+                            <!-- Header con nombre y categoría -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1 fw-bold text-dark">{{ m.nombre }}</h6>
+                                    {% if m.categoria %}
+                                        <span class="badge bg-info bg-opacity-75 small">{{ m.categoria.nombre }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary small">Sin categoría</span>
+                                    {% endif %}
+                                </div>
+                                <!-- Dropdown de acciones -->
+                                <div class="dropdown">
+                                    <button class="btn btn-link btn-sm p-1" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v text-muted"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('admin.editar_menuitem', id=m.id) }}">
+                                                <i class="fas fa-edit me-2 text-primary"></i>Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="verDetallesMobile({{ m.id }}, '{{ m.nombre }}', {{ m.precio }}, '{{ m.categoria.nombre if m.categoria else '' }}', {{ m.sucursales|length }})">
+                                                <i class="fas fa-eye me-2 text-info"></i>Ver detalles
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" 
+                                               onclick="confirmarEliminarProducto({{ m.id }}, '{{ m.nombre }}')">
+                                                <i class="fas fa-trash me-2"></i>Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Descripción truncada -->
+                            {% if m.descripcion %}
+                            <p class="card-text small text-muted mb-2">
+                                {{ m.descripcion[:80] }}{% if m.descripcion|length > 80 %}...{% endif %}
+                            </p>
+                            {% endif %}
+                            
+                            <!-- Información de sucursales -->
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="sucursales-info">
+                                    {% set disponibles_count = 0 %}
+                                    {% for rel in m.sucursales %}
+                                        {% if rel.disponible %}
+                                            {% set disponibles_count = disponibles_count + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if disponibles_count > 0 %}
+                                            <span class="badge bg-success small">
+                                                <i class="fas fa-check"></i> {{ disponibles_count }} activas
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% if m.sucursales|length - disponibles_count > 0 %}
+                                            <span class="badge bg-danger small">
+                                                <i class="fas fa-times"></i> {{ m.sucursales|length - disponibles_count }}
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% if m.opciones %}
+                                            <span class="badge bg-primary small">
+                                                <i class="fas fa-sliders-h"></i> {{ m.opciones|length }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Botón de edición rápida -->
+                                <a href="{{ url_for('admin.editar_menuitem', id=m.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Estado vacío móvil -->
+            <div class="text-center py-5">
+                <i class="fas fa-utensils" style="font-size: 4em; color: var(--pozoleria-orange); opacity: 0.5;"></i>
+                <h5 class="mt-3 text-muted">No hay productos en el menú</h5>
+                <p class="text-muted mb-4">Comienza agregando tu primer producto</p>
+                <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Crear Primer Producto
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Vista escritorio: Tabla original mejorada -->
+    <!-- Vista escritorio: Tabla original mejorada -->
+    <div class="d-none d-lg-block">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold" style="color: var(--pozoleria-orange);">
+                    <i class="fas fa-list me-2"></i>Lista de Productos
+                </h6>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Panel Principal
+                    </a>
+                    <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nuevo Producto
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th width="8%">
+                                    <i class="fas fa-image me-1"></i>Imagen
+                                </th>
+                                <th width="18%">
+                                    <i class="fas fa-utensils me-1"></i>Producto
+                                </th>
+                                <th width="12%">
+                                    <i class="fas fa-dollar-sign me-1"></i>Precio
+                                </th>
+                                <th width="12%">
+                                    <i class="fas fa-tags me-1"></i>Categoría
+                                </th>
+                                <th width="22%">
+                                    <i class="fas fa-store me-1"></i>Sucursales Disponibles
+                                </th>
+                                <th width="15%">
+                                    <i class="fas fa-chart-bar me-1"></i>Estadísticas
+                                </th>
+                                <th width="13%">
+                                    <i class="fas fa-cogs me-1"></i>Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in menu %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if m.imagen %}
+                                        <img src="{{ m.imagen }}" alt="{{ m.nombre }}" 
+                                             class="img-thumbnail" style="max-width:80px;max-height:80px;">
+                                    {% else %}
+                                        <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                                             style="width:80px;height:80px;">
+                                            <i class="fas fa-image fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold">{{ m.nombre }}</div>
+                                    <div class="text-muted small">{{ m.descripcion[:100] }}{% if m.descripcion|length > 100 %}...{% endif %}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success fs-6 px-3 py-2">
+                                        ${{ "%.2f"|format(m.precio) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if m.categoria %}
+                                        <span class="badge bg-info">{{ m.categoria.nombre }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sin categoría</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% set disponibles = 0 %}
+                                        {% set no_disponibles = 0 %}
+                                        {% for rel in m.sucursales %}
+                                            {% if rel.disponible %}
+                                                {% set disponibles = disponibles + 1 %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>{{ rel.sucursal.nombre }}
+                                                </span>
+                                            {% else %}
+                                                {% set no_disponibles = no_disponibles + 1 %}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times me-1"></i>{{ rel.sucursal.nombre }}
+                                                </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if m.sucursales|length == 0 %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Sin asignar
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            <span class="badge bg-success" title="Sucursales disponibles">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% set disponibles_count = 0 %}
+                                                {% for rel in m.sucursales %}
+                                                    {% if rel.disponible %}
+                                                        {% set disponibles_count = disponibles_count + 1 %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {{ disponibles_count }} activas
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-info" title="Total de sucursales asignadas">
+                                                <i class="fas fa-store me-1"></i>{{ m.sucursales|length }} total
+                                            </span>
+                                        </div>
+                                        {% if m.opciones %}
+                                            <div class="mt-1">
+                                                <span class="badge bg-primary" title="Opciones personalizables">
+                                                    <i class="fas fa-sliders-h me-1"></i>{{ m.opciones|length }} opciones
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('admin.editar_menuitem', id=m.id) }}" 
+                                           class="btn btn-primary btn-sm" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-info btn-sm" title="Ver detalles" 
+                                                onclick="verDetalles({{ m.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" title="Eliminar producto"
+                                                onclick="confirmarEliminarProducto({{ m.id }}, '{{ m.nombre }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                                    <div class="h5">No hay productos registrados</div>
+                                    <p class="text-muted">Comienza agregando tu primer producto al menú</p>
+                                    <a href="{{ url_for('admin.nuevo_menuitem') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>Crear Primer Producto
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Estilos movidos a admin_pages.css (sección: listar_menu.html) #}
+
+<script>
+// ========== FUNCIONES MEJORADAS PARA MÓVIL Y ESCRITORIO ==========
+
+// Función para filtrar por categoría (móvil)
+function filtrarPorCategoria() {
+    const filtro = document.getElementById('filtroCategoria').value.toLowerCase();
+    const productos = document.querySelectorAll('.product-card');
+    let visibles = 0;
+    
+    productos.forEach((producto, index) => {
+        const categoria = producto.getAttribute('data-categoria').toLowerCase();
+        const coincide = filtro === '' || categoria.includes(filtro);
+        
+        if (coincide) {
+            producto.classList.remove('filtered-out');
+            producto.style.display = '';
+            // Animación escalonada
+            setTimeout(() => {
+                producto.style.opacity = '1';
+                producto.style.transform = 'translateY(0)';
+            }, index * 50);
+            visibles++;
+        } else {
+            producto.classList.add('filtered-out');
+            setTimeout(() => {
+                producto.style.display = 'none';
+            }, 300);
+        }
+    });
+    
+    mostrarMensajeSinResultados(visibles, 'categoría');
+}
+
+// Función para buscar productos por nombre (móvil)
+function buscarProducto() {
+    const busqueda = document.getElementById('buscadorProducto').value.toLowerCase();
+    const productos = document.querySelectorAll('.product-card');
+    let visibles = 0;
+    
+    productos.forEach((producto, index) => {
+        const nombre = producto.getAttribute('data-nombre');
+        const coincide = nombre.includes(busqueda);
+        
+        if (coincide) {
+            producto.classList.remove('filtered-out');
+            producto.style.display = '';
+            // Animación escalonada
+            setTimeout(() => {
+                producto.style.opacity = '1';
+                producto.style.transform = 'translateY(0)';
+            }, index * 50);
+            visibles++;
+        } else {
+            producto.classList.add('filtered-out');
+            setTimeout(() => {
+                producto.style.display = 'none';
+            }, 300);
+        }
+    });
+    
+    mostrarMensajeSinResultados(visibles, 'búsqueda');
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(visibles, tipoFiltro) {
+    // Remover mensaje anterior si existe
+    const mensajeAnterior = document.querySelector('.no-results-message');
+    if (mensajeAnterior) {
+        mensajeAnterior.remove();
+    }
+    
+    if (visibles === 0) {
+        const container = document.querySelector('.mobile-menu-container');
+        if (container) {
+            const mensaje = document.createElement('div');
+            mensaje.className = 'no-results-message text-center py-5';
+            mensaje.innerHTML = `
+                <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px;">
+                    <i class="fas fa-search" style="font-size: 2em; color: var(--pozoleria-orange);"></i>
+                    <h5 class="mt-3 mb-2">No se encontraron productos</h5>
+                    <p class="mb-0 text-muted">No hay productos que coincidan con tu ${tipoFiltro}.</p>
+                    <button class="btn btn-outline-primary btn-sm mt-2" onclick="limpiarFiltros()">
+                        <i class="fas fa-refresh me-1"></i>Limpiar filtros
+                    </button>
+                </div>
+            `;
+            container.appendChild(mensaje);
+            
+            // Animación de entrada
+            setTimeout(() => {
+                mensaje.style.opacity = '0';
+                mensaje.style.transform = 'translateY(20px)';
+                mensaje.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    mensaje.style.opacity = '1';
+                    mensaje.style.transform = 'translateY(0)';
+                }, 10);
+            }, 10);
+        }
+    }
+}
+
+// Función para limpiar filtros
+function limpiarFiltros() {
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const buscador = document.getElementById('buscadorProducto');
+    
+    if (filtroCategoria) filtroCategoria.value = '';
+    if (buscador) buscador.value = '';
+    
+    // Mostrar todos los productos
+    const productos = document.querySelectorAll('.product-card');
+    productos.forEach((producto, index) => {
+        producto.classList.remove('filtered-out');
+        producto.style.display = '';
+        setTimeout(() => {
+            producto.style.opacity = '1';
+            producto.style.transform = 'translateY(0)';
+        }, index * 30);
+    });
+    
+    // Remover mensaje de sin resultados
+    const mensaje = document.querySelector('.no-results-message');
+    if (mensaje) {
+        mensaje.remove();
+    }
+}
+
+// Función mejorada para ver detalles en móvil
+function verDetallesMobile(id, nombre, precio, categoria, totalSucursales) {
+    const modalHtml = `
+        <div class="modal fade" id="modalDetallesProducto" tabindex="-1" aria-labelledby="modalDetallesProductoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--pozoleria-orange), #ff8c42); border-radius: 15px 15px 0 0;">
+                        <h5 class="modal-title" id="modalDetallesProductoLabel">
+                            <i class="fas fa-utensils me-2"></i>Detalles del Producto
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="product-detail-icon">
+                                <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+                            </div>
+                            <h4 class="text-dark mb-2">${nombre}</h4>
+                            <span class="badge bg-success fs-6 px-3 py-2">$${precio}</span>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="info-card text-center p-3 bg-light rounded">
+                                    <i class="fas fa-tags text-info mb-2"></i>
+                                    <div class="small text-muted">Categoría</div>
+                                    <div class="fw-bold">${categoria || 'Sin categoría'}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-card text-center p-3 bg-light rounded">
+                                    <i class="fas fa-store text-success mb-2"></i>
+                                    <div class="small text-muted">Sucursales</div>
+                                    <div class="fw-bold">${totalSucursales} asignadas</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3" style="border-radius: 10px;">
+                            <h6><i class="fas fa-info-circle me-2"></i>Acciones disponibles</h6>
+                            <ul class="mb-0 small">
+                                <li>Editar información del producto</li>
+                                <li>Modificar disponibilidad por sucursal</li>
+                                <li>Gestionar opciones personalizadas</li>
+                                <li>Actualizar imagen y descripción</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cerrar
+                        </button>
+                        <a href="/admin/menu/editar/${id}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Producto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente si hay uno
+    const modalExistente = document.getElementById('modalDetallesProducto');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+    
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalDetallesProducto'));
+    modal.show();
+    
+    // Limpiar modal después de cerrar
+    document.getElementById('modalDetallesProducto').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+
+// Función original para escritorio (mejorada)
+function verDetalles(id) {
+    // Obtener información del producto desde la fila de la tabla
+    const fila = event.target.closest('tr');
+    const nombre = fila.querySelector('.font-weight-bold').textContent;
+    const precio = fila.querySelector('.badge.bg-success').textContent;
+    
+    // Contar sucursales disponibles y no disponibles
+    const badgesSuccess = fila.querySelectorAll('.badge.bg-success').length - 1; // -1 porque el precio también es success
+    const badgesDanger = fila.querySelectorAll('.badge.bg-danger').length;
+    
+    let mensaje = '📋 DETALLES DEL PRODUCTO\n\n';
+    mensaje += '🥘 Producto: ' + nombre + '\n';
+    mensaje += '💰 Precio: ' + precio + '\n';
+    mensaje += '🏪 Sucursales disponibles: ' + badgesSuccess + '\n';
+    mensaje += '❌ Sucursales no disponibles: ' + badgesDanger + '\n\n';
+    mensaje += '⚙️ Acciones disponibles:\n';
+    mensaje += '• Editar información del producto\n';
+    mensaje += '• Modificar disponibilidad por sucursal\n';
+    mensaje += '• Gestionar opciones personalizadas\n';
+    mensaje += '• Actualizar imagen y descripción';
+    
+    alert(mensaje);
+}
+
+// Función mejorada para confirmar eliminación
+function confirmarEliminarProducto(id, nombre) {
+    const modalHtml = `
+        <div class="modal fade" id="modalEliminarProducto" tabindex="-1" aria-labelledby="modalEliminarProductoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                    <div class="modal-header bg-danger text-white" style="border-radius: 15px 15px 0 0;">
+                        <h5 class="modal-title" id="modalEliminarProductoLabel">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Confirmar eliminación
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-3">
+                            <div class="delete-icon mb-3">
+                                <i class="fas fa-utensils fa-4x text-danger"></i>
+                            </div>
+                            <h5 class="text-dark">¿Estás seguro de eliminar este producto?</h5>
+                            <p class="text-muted mb-3">
+                                <strong>"${nombre}"</strong>
+                            </p>
+                            <div class="alert alert-warning" style="border-radius: 10px;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Esta acción no se puede deshacer.</strong>
+                                <br>Se eliminará permanentemente el producto y todas sus opciones personalizadas.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <form method="POST" action="/admin/menu/eliminar/${id}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Eliminar producto
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente si hay uno
+    const modalExistente = document.getElementById('modalEliminarProducto');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+    
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalEliminarProducto'));
+    modal.show();
+    
+    // Limpiar modal después de cerrar
+    document.getElementById('modalEliminarProducto').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+
+// Función para animar la entrada de las cards
+function animarEntradaCards() {
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+// Función para mejorar las estadísticas con efectos hover
+function mejorarEstadisticas() {
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+}
+
+// Inicialización cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Animar entrada de cards en móvil
+    if (window.innerWidth < 992) {
+        setTimeout(animarEntradaCards, 100);
+    }
+    
+    // Mejorar estadísticas
+    mejorarEstadisticas();
+    
+    // Agregar efectos de hover mejorados a las product cards
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 12px 35px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+        });
+    });
+    
+    // Mejorar el input de búsqueda con debounce
+    let searchTimeout;
+    const buscador = document.getElementById('buscadorProducto');
+    if (buscador) {
+        buscador.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(buscarProducto, 300);
+        });
+    }
+});
+
+// Función para manejar el redimensionamiento de ventana
+window.addEventListener('resize', function() {
+    // Re-animar cards si se cambia a móvil
+    if (window.innerWidth < 992) {
+        const cards = document.querySelectorAll('.product-card');
+        if (cards.length > 0 && !cards[0].style.opacity) {
+            setTimeout(animarEntradaCards, 100);
+        }
+    }
+});
+
+// Mejorar accesibilidad con teclado
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Cerrar cualquier modal abierto
+        const modalesAbiertos = document.querySelectorAll('.modal.show');
+        modalesAbiertos.forEach(modal => {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        });
+    }
+    
+    // Atajo de teclado para nuevo producto (Ctrl+N)
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        window.location.href = '{{ url_for("admin.nuevo_menuitem") }}';
+    }
+});
+</script>
+
