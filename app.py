@@ -162,6 +162,31 @@ with app.app_context():
     except Exception as _e_norm:
         print('[NORMALIZACION] Aviso al limpiar imágenes:', _e_norm)
 
+    # Registro automático de webhook (solo una vez al arrancar el proceso principal)
+    try:
+        # Condiciones: tener TOKEN, no usar polling explícito y bandera TELEGRAM_AUTO_WEBHOOK=1
+        if TELEGRAM_TOKEN and os.getenv('TELEGRAM_USE_POLLING', '0') != '1' and os.getenv('TELEGRAM_AUTO_WEBHOOK', '1') == '1':
+            # Base pública: prioridad a TELEGRAM_WEBHOOK_BASE, luego RENDER_EXTERNAL_URL, luego PUBLIC_BASE_URL
+            public_base = os.getenv('TELEGRAM_WEBHOOK_BASE') or os.getenv('PUBLIC_BASE_URL') or os.getenv('RENDER_EXTERNAL_URL')
+            if public_base:
+                public_base = public_base.rstrip('/')
+                webhook_url = f"{public_base}/telegram/webhook"
+                import requests as _r
+                resp = _r.get(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook', params={'url': webhook_url, 'max_connections': 40})
+                j = {}
+                try:
+                    j = resp.json()
+                except Exception:
+                    pass
+                if j.get('ok'):
+                    print(f"[TELEGRAM] Webhook registrado auto -> {webhook_url}")
+                else:
+                    print(f"[TELEGRAM] Falló auto setWebhook status={resp.status_code} body={resp.text[:200]}")
+            else:
+                print('[TELEGRAM] No se pudo registrar webhook automáticamente: falta TELEGRAM_WEBHOOK_BASE o RENDER_EXTERNAL_URL')
+    except Exception as _e_auto_wh:
+        print('[TELEGRAM] Error registrando webhook auto:', _e_auto_wh)
+
 # Iniciar polling en desarrollo (solo si no hay variable que indique producción)
 try:
     # En producción (Render) se recomienda usar webhook; desactivar polling por defecto (valor '0').
@@ -203,6 +228,37 @@ def delete_webhook():
     import requests as _r
     resp = _r.get(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/deleteWebhook')
     return resp.text, resp.status_code
+
+@app.route('/telegram/webhook_info')
+def webhook_info():
+    """Devuelve info del webhook actual para debugging."""
+    if not TELEGRAM_TOKEN:
+        return jsonify({'ok': False, 'error': 'Sin TELEGRAM_TOKEN'}), 400
+    import requests as _r
+    r = _r.get(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/getWebhookInfo', timeout=10)
+    try:
+        data = r.json()
+    except Exception:
+        data = {'ok': False, 'error': 'Respuesta no JSON', 'raw': r.text[:200]}
+    return jsonify(data), 200 if data.get('ok') else 500
+
+@app.route('/telegram/force_webhook')
+def force_webhook():
+    """Fuerza setWebhook usando base de env. Protegido opcionalmente por TELEGRAM_WEBHOOK_SECRET."""
+    secret_cfg = os.getenv('TELEGRAM_WEBHOOK_SECRET')
+    secret_req = request.args.get('secret')
+    if secret_cfg and secret_cfg != secret_req:
+        return 'Forbidden', 403
+    if not TELEGRAM_TOKEN:
+        return 'Falta TELEGRAM_TOKEN', 400
+    base = request.args.get('base') or os.getenv('TELEGRAM_WEBHOOK_BASE') or os.getenv('PUBLIC_BASE_URL') or os.getenv('RENDER_EXTERNAL_URL')
+    if not base:
+        return 'Falta base (?base=https://... o TELEGRAM_WEBHOOK_BASE)', 400
+    base = base.rstrip('/')
+    full_url = f"{base}/telegram/webhook"
+    import requests as _r
+    r = _r.get(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook', params={'url': full_url})
+    return r.text, r.status_code
 
 @app.route('/telegram/poll')
 def telegram_poll():
