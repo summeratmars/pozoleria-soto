@@ -10,7 +10,10 @@ import os
 # (Nunca dejar tokens sensibles en el repositorio)
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '')
 ADMIN_CHAT_ID = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '')
+# Si no se define ADMIN_CHAT_ID se activa modo relajado: se aceptan todos los chats (solo para debug)
 ALLOWED_CHATS = {c for c in {ADMIN_CHAT_ID} if c}
+if not ALLOWED_CHATS:
+    print('[TELEGRAM] Advertencia: TELEGRAM_ADMIN_CHAT_ID no definido. Modo debug: se aceptarán todos los chats para comandos.')
 
 API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}" if TELEGRAM_TOKEN else ''
 
@@ -206,11 +209,13 @@ def test_telegram_bot():
 def procesar_update(update: dict):
     """Procesa un update entrante de Telegram (webhook)."""
     try:
+        print('[TELEGRAM] Update recibido bruto:', update)
         if 'message' in update:
             message = update['message']
             chat_id = str(message.get('chat', {}).get('id'))
             text = (message.get('text') or '').strip()
-            if chat_id not in ALLOWED_CHATS:
+            if ALLOWED_CHATS and chat_id not in ALLOWED_CHATS:
+                print(f'[TELEGRAM] Ignorando mensaje de chat no autorizado {chat_id}')
                 return
             if text.startswith('/'):
                 manejar_comando(chat_id, text)
@@ -219,7 +224,8 @@ def procesar_update(update: dict):
             chat_id = str(cq.get('message', {}).get('chat', {}).get('id'))
             data = cq.get('data', '')
             message_id = cq.get('message', {}).get('message_id')
-            if chat_id not in ALLOWED_CHATS:
+            if ALLOWED_CHATS and chat_id not in ALLOWED_CHATS:
+                print(f'[TELEGRAM] Ignorando callback de chat no autorizado {chat_id}')
                 return
             manejar_callback(chat_id, message_id, data, cq.get('id'))
     except Exception as e:
@@ -235,7 +241,8 @@ def manejar_comando(chat_id: str, text: str):
         estado_code = parts[2].lower()
         estado_destino = ESTADOS_MAP.get(estado_code)
         if not estado_destino:
-            _send('sendMessage', {"chat_id": chat_id, "text": "Estado inválido. Usa: pendiente, en_camino, entregado"})
+            estados_validos = ', '.join(sorted({v for v in ESTADOS_MAP.values()}))
+            _send('sendMessage', {"chat_id": chat_id, "text": f"Estado inválido. Valores: {estados_validos}"})
             return
         actualizar_estado_pedido_telegram(chat_id, numero, estado_destino)
     else:
