@@ -1,4 +1,11 @@
 @echo off
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM Permitir desactivar la pausa final con --no-pause o -q
+for %%A in (%*) do (
+  if /I "%%~A"=="--no-pause" set NO_PAUSE=1
+  if /I "%%~A"=="-q" set NO_PAUSE=1
+  if /I "%%~A"=="--debug" set DEBUG=1
+)
 REM =============================================================
 REM  Script: git_push.bat
 REM  Uso:    git_push.bat [mensaje commit opcional]
@@ -68,24 +75,39 @@ IF %ERRORLEVEL%==0 (
 )
 
 echo [INFO] Haciendo push a origin main...
-git push -u origin main
+if defined DEBUG (
+  git push -v -u origin main
+) else (
+  git push -u origin main
+)
 IF ERRORLEVEL 1 (
   echo.
   echo [ERROR] Push fallido. Posibles causas:
   echo   - Token/credenciales no configuradas (primera vez)
   echo   - Permisos insuficientes en el repo remoto
-  echo   - Conexion a internet
+  echo   - Conexion a internet o firewall bloqueando
   echo.
   echo Sugerencias:
-  echo   1) Genera un PAT en https://github.com/settings/tokens  (scopes: repo)
-  echo   2) Ejecuta: git config credential.helper manager
-  echo   3) Repite: git push (ingresa usuario y token como password)
-  exit /b 1
+  echo   1) Genera un PAT: https://github.com/settings/tokens (scope: repo)
+  echo   2) Configura helper: git config --global credential.helper manager
+  echo   3) Repite: git push (usuario + token como password)
+  set EXITCODE=1
+) else (
+  set EXITCODE=0
 )
 
-echo [OK] Push completado correctamente.
+IF !EXITCODE! EQU 0 (
+  echo [OK] Push completado correctamente.
+  echo.
+  echo Si Render esta vinculado a GitHub, la deployment se iniciara automaticamente.
+  echo (Ver logs en el panel de Render.)
+) else (
+  echo.
+  echo --- FIN con errores (EXITCODE=!EXITCODE!) ---
+)
 echo.
-echo Si Render esta vinculado a GitHub, la deployment se iniciara automaticamente.
-echo (Ver logs en el panel de Render.)
-
-exit /b 0
+if not defined NO_PAUSE (
+  echo Presiona una tecla para cerrar...
+  pause >NUL
+)
+exit /b !EXITCODE!
