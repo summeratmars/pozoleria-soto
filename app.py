@@ -39,6 +39,9 @@ def _database_uri():
             uri += '&sslmode=require'
         else:
             uri += '?sslmode=require'
+    # Forzar uso de nuevo driver psycopg si no se especifica (evitar psycopg2 por defecto en SQLAlchemy)
+    if uri.startswith('postgresql://') and '+psycopg' not in uri:
+        uri = uri.replace('postgresql://', 'postgresql+psycopg://', 1)
     return uri
 
 app.config['SQLALCHEMY_DATABASE_URI'] = _database_uri()

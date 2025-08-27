@@ -5,6 +5,5 @@ python-dotenv==1.0.1
 requests==2.32.3
 pytz==2024.1
 gunicorn==22.0.0
-# Fijar versión compatible; error anterior indica build con Python 3.13.
-# Usaremos Python 3.12 en runtime.txt para evitar incompatibilidades.
-psycopg2-binary==2.9.9
+# Migramos a psycopg 3 (compatible Python 3.13) en lugar de psycopg2-binary
+psycopg[binary]==3.1.19
